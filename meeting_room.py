@@ -138,6 +138,6 @@ if __name__ == '__main__':
     print(result)
     for i in range(len(result)):
         draw_meeting_room_with_angles(result.iloc[i]['angle200'], result.iloc[i]['angle300'],
-                                      value=result.iloc[i]['value'], save_path=os.path.join(save_path_base, f"{i}.png"))
+                                      value=result.iloc[i]['value'], save_path=os.path.join(save_path_base, f"{i}.png"), tx_three=True, max_reflections=3, draw_rx_beam=False, check_rx_in_tx_beam=True)
 
     print(result)

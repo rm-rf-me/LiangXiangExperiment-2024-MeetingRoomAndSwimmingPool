@@ -238,5 +238,5 @@ def draw_meeting_room_with_angles(tx_angles, rx_angles, value=None, max_reflecti
 
 
 if __name__ == '__main__':
-    draw_meeting_room_with_angles(133, 226, max_reflections=3, tx_three=True, draw_rx_beam=False,
+    draw_meeting_room_with_angles(92, 90, max_reflections=2, tx_three=True, draw_rx_beam=False,
                                   check_rx_in_tx_beam=True)
