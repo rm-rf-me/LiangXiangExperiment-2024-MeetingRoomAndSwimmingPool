@@ -32,9 +32,15 @@ end
     pd_rician1 = fitdist(power11, 'Rician');
     cdf_rician1 = cdf(pd_rician1, x_values1);
 
-    x_values2 = linspace(min(power12), max(power12), 200);
-    pd_rician2 = fitdist(power12, 'Rician');
-    cdf_rician2 = cdf(pd_rician2, x_values2);
+    pd_Rayleigh1 = fitdist(power11, 'Rayleigh');
+    cdf_Rayleigh1 = cdf(pd_Rayleigh1, x_values1);
+
+    pd_Weibull1 = fitdist(power11, 'Weibull');
+    cdf_Weibull1 = cdf(pd_Weibull1, x_values1);
+% 
+%     x_values2 = linspace(min(power12), max(power12), 200);
+%     pd_rician2 = fitdist(power12, 'Rician');
+%     cdf_rician2 = cdf(pd_rician2, x_values2);
 
 %     x_values3 = linspace(min(power13), max(power13), 200);
 %     pd_rician3 = fitdist(power13, 'Rician');
@@ -45,10 +51,12 @@ end
     set(h1,'color','k','LineStyle',':','LineWidth',2);
     hold on
     plot(x_values1, cdf_rician1, 'r-', 'LineWidth', 1);
-
-    h2 = cdfplot(power12); % Empirical CDF
-    set(h2,'color','k','LineStyle',':','LineWidth',2);
-    plot(x_values2, cdf_rician2, 'b-', 'LineWidth', 1);
+    plot(x_values1, cdf_Rayleigh1, 'b-', 'LineWidth', 1);
+    plot(x_values1, cdf_Weibull1, 'g-', 'LineWidth', 1);
+% 
+%     h2 = cdfplot(power12); % Empirical CDF
+%     set(h2,'color','k','LineStyle',':','LineWidth',2);
+%     plot(x_values2, cdf_rician2, 'b-', 'LineWidth', 1);
 
 %     h3 = cdfplot(power13); % Empirical CDF
 %     set(h3,'color','k','LineStyle',':','LineWidth',2);
@@ -71,5 +79,6 @@ end
     % text(4.8,0.7,tex,'Color','r',"FontSize",10);
     xlabel('SNR');
     ylabel('CDF')
-    xlim([4 5])
+    legend('Sine Wave', 'Cosine Wave');
+%     xlim([4 5])
 grid off;
