@@ -6,19 +6,16 @@ import json
 from scipy.signal import find_peaks
 from draw_meeting_room_2d import draw_meeting_room_with_angles
 
-base_path = os.path.join(os.path.dirname(__file__), "办公室全散射第三次补全", "data")
+base_path = os.path.join(os.path.dirname(__file__), "meeting_room_data_2", "data")
 first_data_name = "2024-07-25-15-09-29_test.xlsx"
 second_data_name = "2024-07-25-16-08-09_靠窗tx30度.xlsx"
 third_data_name = "2024-07-25-18-09-07_第二次补充rx靠窗背后.xlsx"
 fourth_data_name = "2024-07-25-19-12-30_第三次补充.xlsx"
 
 
-def load_data(file_name, base_path=True):
+def load_data(file_name):
     data = []
-    if base_path:
-        file_path = os.path.join(base_path, file_name)
-    else:
-        file_path = file_name
+    file_path = os.path.join(base_path, file_name)
     df = pd.read_excel(file_path)
     # for i in range(len(df)):
     #     data.append()
@@ -59,7 +56,7 @@ def plot_heatmap(df, title, s_size=1, save_path=None):
     plt.clf()
     # 颜色不明显，让图变大，颜色对比更强烈,换个好的颜色
 
-    plt.scatter(df.angle200 - 90, df.angle300 - 90, c=df.value, cmap='viridis', s=s_size)
+    plt.scatter(df.angle200, df.angle300, c=df.value, cmap='viridis', s=s_size)
     plt.colorbar()
     plt.xlabel('Angle200')
     plt.ylabel('Angle300')
@@ -106,20 +103,15 @@ def draw_angle_300_line(df, angle200, save_path=None):
 
 
 if __name__ == '__main__':
-    save_path_base = os.path.join(os.path.dirname(__file__), "meeting_room_pic_140_有窗帘")
+    save_path_base = os.path.join(os.path.dirname(__file__), "meeting_room_pic")
 
-    # first_data, second_data, third_data, fourth_data = load_all_data()
-    # first_data = shifting_angle(filter_data(first_data), 30, 30)
-    # second_data = shifting_angle(filter_data(second_data), 150, 30)
-    # third_data = shifting_angle(filter_data(third_data), 90, 90)
-    # fourth_data = shifting_angle(filter_data(fourth_data), 0, 0)
-    #
-    # new_data = concat_df(first_data, second_data, third_data, fourth_data)
-    new_data = load_data("/Users/liou/project/thz/water/LiangXiangExperiment-2024-MeetingRoomAndSwimmingPool/meeting_room_data_2/2024-10-08-17-02-44_有窗帘 140ghz 发射和接收都扫270度.xlsx", base_path=False)
-    new_data = shifting_angle(filter_data(new_data, value_min=-39), -45, -45)
-    draw_angle_300_line(new_data, 89, save_path=os.path.join(save_path_base, "fangxiangtu0.png"))
-    draw_angle_300_line(new_data, 91, save_path=os.path.join(save_path_base, "fangxiangtu1.png"))
+    first_data, second_data, third_data, fourth_data = load_all_data()
+    first_data = shifting_angle(filter_data(first_data), 30, 30)
+    second_data = shifting_angle(filter_data(second_data), 150, 30)
+    third_data = shifting_angle(filter_data(third_data), 90, 90)
+    fourth_data = shifting_angle(filter_data(fourth_data), 0, 0)
 
+    new_data = concat_df(first_data, second_data, third_data, fourth_data)
     plot_heatmap(new_data, "All Data", save_path=os.path.join(save_path_base, "all_data.png"))
 
     new_data = new_data[((new_data['angle200'] < 85) | (new_data['angle200'] > 95)) &

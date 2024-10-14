@@ -204,9 +204,9 @@ def draw_meeting_room(walls, tx_position, tx_angle, rx_position, rx_angle, max_r
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     if value is not None:
-        ax.set_title(f'Meeting room, Rx angle: {rx_angle}°, Tx angle: {tx_angle}°\n Value: {value}')
+        ax.set_title(f'Rx angle: {rx_angle+90}°, Tx angle: {90-tx_angle}°\n Value: {value}')
     else:
-        ax.set_title(f'Meeting room, Rx angle: {rx_angle}°, Tx angle: {tx_angle}°')
+        ax.set_title(f'Rx angle: {rx_angle+90}°, Tx angle: {90-tx_angle}°')
     plt.grid()
     plt.tight_layout()
 
