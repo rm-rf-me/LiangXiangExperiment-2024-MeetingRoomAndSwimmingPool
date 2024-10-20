@@ -6,11 +6,12 @@ import json
 from scipy.signal import find_peaks
 from draw_meeting_room_2d import draw_meeting_room_with_angles
 
-base_path = os.path.join(os.path.dirname(__file__), "meeting_room_data_2", "data")
-first_data_name = "2024-07-25-15-09-29_test.xlsx"
-second_data_name = "2024-07-25-16-08-09_靠窗tx30度.xlsx"
-third_data_name = "2024-07-25-18-09-07_第二次补充rx靠窗背后.xlsx"
-fourth_data_name = "2024-07-25-19-12-30_第三次补充.xlsx"
+base_path = os.path.join(os.path.dirname(__file__), "meeting_room_data_2")
+first_data_name = "2024-10-10-09-43-45_后侧门 二次反射.xlsx"
+second_data_name = "2024-10-09-21-32-59_一次反射第二次测量.xlsx"
+third_data_name = "2024-10-10-16-10-48_前门二次反射  重新测.xlsx"
+fourth_data_name = "2024-10-09-20-02-40_有窗帘 一侧160度扫描.xlsx"
+# fourth_data_name = "2024-10-10-15-26-50_无窗帘一侧的反射 160度.xlsx"
 
 
 def load_data(file_name):
@@ -32,9 +33,12 @@ def load_all_data():
     # return first_data
 
 
-def shifting_angle(df, angle200_bias, angle300_bias):
-    df['angle200'] = df['angle200'] + angle200_bias
-    df['angle300'] = df['angle300'] + angle300_bias
+def shifting_angle(df, angle200_bias, angle300_bias, reverse=False):
+    tmp = 1
+    if reverse:
+        tmp = -1
+    df['angle200'] = df['angle200'] * tmp + angle200_bias
+    df['angle300'] = df['angle300'] * tmp + angle300_bias
     return df
 
 
@@ -56,7 +60,7 @@ def plot_heatmap(df, title, s_size=1, save_path=None):
     plt.clf()
     # 颜色不明显，让图变大，颜色对比更强烈,换个好的颜色
 
-    plt.scatter(df.angle200, df.angle300, c=df.value, cmap='viridis', s=s_size)
+    plt.scatter(df.angle200 - 90, df.angle300 - 90, c=df.value, cmap='viridis', s=s_size)
     plt.colorbar()
     plt.xlabel('Angle200')
     plt.ylabel('Angle300')
@@ -103,15 +107,24 @@ def draw_angle_300_line(df, angle200, save_path=None):
 
 
 if __name__ == '__main__':
-    save_path_base = os.path.join(os.path.dirname(__file__), "meeting_room_pic")
+    save_path_base = os.path.join(os.path.dirname(__file__), "meeting_room_pic_220_chuanglian")
 
-    first_data, second_data, third_data, fourth_data = load_all_data()
-    first_data = shifting_angle(filter_data(first_data), 30, 30)
-    second_data = shifting_angle(filter_data(second_data), 150, 30)
-    third_data = shifting_angle(filter_data(third_data), 90, 90)
-    fourth_data = shifting_angle(filter_data(fourth_data), 0, 0)
+    raw_first_data, raw_second_data, raw_third_data, raw_fourth_data = load_all_data()
+    first_data = shifting_angle(filter_data(raw_first_data), 0, 90, reverse=True)
+    second_data = shifting_angle(filter_data(raw_second_data), 15, 15)
+    third_data = shifting_angle(filter_data(raw_third_data), 90, 0, reverse=True)
+    fourth_data = shifting_angle(filter_data(raw_fourth_data), 90, 90)
+
+    no_filter_first_data = shifting_angle(raw_first_data, 0, 90, reverse=True)
+    no_filter_second_data = shifting_angle(raw_second_data, 15, 15)
+    no_filter_third_data = shifting_angle(raw_third_data, 90, 0, reverse=True)
+    no_filter_fourth_data = shifting_angle(raw_fourth_data, 90, 90)
+
+    no_filter_new_data = concat_df(no_filter_first_data, no_filter_second_data, no_filter_third_data, no_filter_fourth_data)
+    no_filter_new_data.to_excel(os.path.join(save_path_base, "meeting_room_data.xlsx"))
 
     new_data = concat_df(first_data, second_data, third_data, fourth_data)
+
     plot_heatmap(new_data, "All Data", save_path=os.path.join(save_path_base, "all_data.png"))
 
     new_data = new_data[((new_data['angle200'] < 85) | (new_data['angle200'] > 95)) &
