@@ -31,7 +31,8 @@ def read_wave_height_data(files):
         # tmp_h = tmp_split_time[0].astype(int)
         # tmp_m = tmp_split_time[1].astype(int)
         tmp_s = tmp_split_time[0].astype(int)
-        tmp_ms = tmp_split_time[1].fillna("000000")  # 毫秒部分，如果缺失填充默认值
+        tmp_ms = tmp_split_time[1].fillna("000")  # 毫秒部分，如果缺失填充默认值
+        # tmp_ms = tmp_ms.apply(lambda x: f"{float(x):.3f}")
 
         # 获取初始时间
         old_h, old_m, old_s = map(int, beggning_time[-1].split("."))
@@ -66,12 +67,19 @@ def fix_time_format(time_str):
     parts = time_str.split(".")
     # 如果长度大于 3，说明有毫秒部分
     if len(parts) > 3:
-        parts[3] = parts[3][:6].zfill(6)  # 确保毫秒部分是 6 位
+        if len(parts[3][:3]) == 1:
+            parts[3] = f"{parts[3][:3]}00"
+        elif len(parts[3][:3]) == 2:
+            parts[3] = f"{parts[3][:3]}0"
+        else:
+            parts[3] = f"{parts[3][:3]}"
+    else:
+        parts.append("000")
     return ".".join(parts)
 
 
 def filter_by_time_range(df, start_time_str, end_time_str):
-    # 修正时间列格式，确保毫秒部分为6位数
+    # 修正时间列格式，确保毫秒部分为3位数
     df['Time'] = df['Time'].apply(fix_time_format)
 
     # 将 'Time' 列转换为标准的 datetime 格式
