@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats import rice
+from scipy.stats import rice, rayleigh, weibull_min
 import os
 
 
@@ -33,42 +33,84 @@ def cdf_rice(data_list, save_path=None, title=None, noice_level=None):
     power13 = np.array(data13_linear)
 
     x_values1 = np.linspace(min(power11), max(power11), 200)
-    cdf_rician1 = rice.cdf(x_values1, *rice.fit(power11))
+    rice_params1 = rice.fit(power11, floc=0)
+    shape_param1, _, _ = rice_params1
+    k_factor1 = (shape_param1 ** 2) / 2
+    cdf_rician1 = rice.cdf(x_values1, *rice_params1)
+    cdf_rayleigh1 = rayleigh.cdf(x_values1, *rayleigh.fit(power11))
+    cdf_weibull1 = weibull_min.cdf(x_values1, *weibull_min.fit(power11))
 
     x_values2 = np.linspace(min(power12), max(power12), 200)
-    cdf_rician2 = rice.cdf(x_values2, *rice.fit(power12))
+    rice_params2 = rice.fit(power12, floc=0)
+    shape_param2, _, _ = rice_params2
+    k_factor2 = (shape_param2 ** 2) / 2
+    cdf_rician2 = rice.cdf(x_values2, *rice_params2)
+    cdf_rayleigh2 = rayleigh.cdf(x_values2, *rayleigh.fit(power12))
+    cdf_weibull2 = weibull_min.cdf(x_values2, *weibull_min.fit(power12))
 
     x_values3 = np.linspace(min(power13), max(power13), 200)
-    cdf_rician3 = rice.cdf(x_values3, *rice.fit(power13))
+    rice_params3 = rice.fit(power13, floc=0)
+    shape_param3, _, _ = rice_params3
+    k_factor3 = (shape_param3 ** 2) / 2
+    cdf_rician3 = rice.cdf(x_values3, *rice_params3)
+    cdf_rayleigh3 = rayleigh.cdf(x_values3, *rayleigh.fit(power13))
+    cdf_weibull3 = weibull_min.cdf(x_values3, *weibull_min.fit(power13))
 
     # Plotting the empirical and fitted CDFs
     plt.figure()
     plt.grid(False)
 
     # Plot empirical CDFs
-    h1 = plt.hist(power11, bins=200, density=True, cumulative=True, histtype='step', color='r', linestyle=':',
-                  linewidth=2, label='No Wave Empirical CDFs')
-    h2 = plt.hist(power12, bins=200, density=True, cumulative=True, histtype='step', color='b', linestyle=':',
-                  linewidth=2, label='Small Wave Empirical CDFs')
-    h3 = plt.hist(power13, bins=200, density=True, cumulative=True, histtype='step', color='g', linestyle=':',
-                  linewidth=2, label='Big Wave Empirical CDFs')
+    # h1 = plt.hist(power11, bins=200, density=True, cumulative=True, histtype='step', color='r', linestyle=':',
+    #               linewidth=2, label='No Wave Empirical CDFs')
+    # h2 = plt.hist(power12, bins=200, density=True, cumulative=True, histtype='step', color='b', linestyle=':',
+    #               linewidth=2, label='Small Wave Empirical CDFs')
+    # h3 = plt.hist(power13, bins=200, density=True, cumulative=True, histtype='step', color='g', linestyle=':',
+    #               linewidth=2, label='Big Wave Empirical CDFs')
+
+    counts11, bins11 = np.histogram(power11, bins=200, density=True)
+    counts12, bins12 = np.histogram(power12, bins=200, density=True)
+    counts13, bins13 = np.histogram(power13, bins=200, density=True)
+
+    # 计算累积分布
+    cdf11 = np.cumsum(counts11) / np.sum(counts11)
+    cdf12 = np.cumsum(counts12) / np.sum(counts12)
+    cdf13 = np.cumsum(counts13) / np.sum(counts13)
+
+    # 计算 bin 的中心点
+    bin_centers11 = (bins11[:-1] + bins11[1:]) / 2
+    bin_centers12 = (bins12[:-1] + bins12[1:]) / 2
+    bin_centers13 = (bins13[:-1] + bins13[1:]) / 2
+
+    # 绘制散点图
+    plt.scatter(bin_centers11, cdf11, color='r', s=0.5, linestyle=':', linewidth=1.5, label='No Wave Empirical CDFs')
+    plt.scatter(bin_centers12, cdf12, color='b', s=0.5, linestyle=':', linewidth=1.5, label='Small Wave Empirical CDFs')
+    plt.scatter(bin_centers13, cdf13, color='g', s=0.5, linestyle=':', linewidth=1.5, label='Big Wave Empirical CDFs')
 
     # Plot fitted Rician CDFs
     plt.plot(x_values1, cdf_rician1, 'r-', linewidth=1, label='No Wave Fitted CDFs')
     plt.plot(x_values2, cdf_rician2, 'b-', linewidth=1, label='Small Wave Fitted CDFs')
     plt.plot(x_values3, cdf_rician3, 'g-', linewidth=1, label='Big Wave Fitted CDFs')
 
+    plt.plot(x_values1, cdf_rayleigh1, 'r--', linewidth=1, label='No Wave Fitted Rayleigh CDFs')
+    plt.plot(x_values2, cdf_rayleigh2, 'b--', linewidth=1, label='Small Wave Fitted Rayleigh CDFs')
+    plt.plot(x_values3, cdf_rayleigh3, 'g--', linewidth=1, label='Big Wave Fitted Rayleigh CDFs')
+
+    plt.plot(x_values1, cdf_weibull1, 'r-.', linewidth=1, label='No Wave Fitted Weibull CDFs')
+    plt.plot(x_values2, cdf_weibull2, 'b-.', linewidth=1, label='Small Wave Fitted Weibull CDFs')
+    plt.plot(x_values3, cdf_weibull3, 'g-.', linewidth=1, label='Big Wave Fitted Weibull CDFs')
+
     # # plt Power11, Power12, Power13, x-axis is the Number
     # plt.plot(np.arange(rmax1), Power11, 'r-', linewidth=1, label='No Wave Power')
     # plt.plot(np.arange(rmax1), Power12, 'b-', linewidth=1, label='Small Wave Power')
     # plt.plot(np.arange(rmax1), Power13, 'g-', linewidth=1, label='Big Wave Power')
 
-    plt.xlabel('SNR')
+    plt.xlabel(f'SNR')
     plt.ylabel('CDF')
-    plt.xlim([0, 16])
+    # plt.xlim([0, 16])
     plt.legend()
     if title is not None:
-        plt.title(title)
+        plt.title(title + f"\nK1={k_factor1:.2f}, K2={k_factor2:.2f}, K3={k_factor3:.2f}")
     if save_path is not None:
         plt.savefig(save_path)
     plt.show()
