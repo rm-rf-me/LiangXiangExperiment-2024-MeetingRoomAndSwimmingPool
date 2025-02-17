@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import rice, rayleigh, weibull_min
 import os
 import pandas as pd
+from indoor_water_height import get_indoor_data_after_cut
 
 base_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "实验室水面实验", "时序")
 
@@ -151,7 +152,6 @@ def cdf_rice(data_list, save_path=None, title=None, noice_level=None):
     plt.show()
 
 
-
 def cdf_for_indoor_water():
     save_path_base = os.path.join(os.path.dirname(__file__), 'indoor_water_cdf_pic')
     data_dict = read_all_data()
@@ -168,9 +168,34 @@ def cdf_for_indoor_water():
                     idx = 0
                 data_list[idx] = data_dict[degree][freq][wave]
 
-            cdf_rice([cut_data(x) for x in data_list], save_path=os.path.join(save_path_base, f'_{degree}度_{freq}GHz_{wave}.png'),
+            cdf_rice([cut_data(x) for x in data_list],
+                     save_path=os.path.join(save_path_base, f'_{degree}度_{freq}GHz_{wave}.png'),
                      title=f'{degree}Degree, {freq}GHz', noice_level=39)
 
 
+def cdf_for_indoor_water_with_cut_data():
+    save_path_base = os.path.join(os.path.dirname(__file__), 'indoor_water_cdf_pic_after_cut')
+    data_30, data_45 = get_indoor_data_after_cut()
+
+    all_data = {
+        '30': data_30,
+        '45': data_45
+    }
+    for degree, degree_list in all_data.items():
+        for freq, freq_data in degree_list.items():
+            data_list = [None, None, None]
+            for wave, wave_data in freq_data.items():
+                if wave == 'Little Wave':
+                    idx = 1
+                elif wave == 'Big Wave':
+                    idx = 2
+                else:
+                    idx = 0
+                data_list[idx] = wave_data
+            cdf_rice([cut_data(x) for x in data_list],
+                     save_path=os.path.join(save_path_base, f'_{degree}度_{freq}GHz.png'),
+                     title=f'{degree}Degree, {freq}GHz', noice_level=39 if degree == '30' else 41)
+
+
 if __name__ == '__main__':
-    cdf_for_indoor_water()
+    cdf_for_indoor_water_with_cut_data()
