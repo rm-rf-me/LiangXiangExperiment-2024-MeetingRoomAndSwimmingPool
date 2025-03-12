@@ -165,10 +165,12 @@ def read_all_data():
 
 
 def plot_data_list(data_list, title, save_path=None):
+    cut_data_base_path = os.path.join(os.path.dirname(__file__), 'swimming_pool_after_cut_data')
     plt.rcParams['figure.figsize'] = [12, 4]
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
     for k, data in data_list.items():
+        data.to_excel(os.path.join(cut_data_base_path, title + str(k) + ".xlsx"))
         if "Time" in data:
             ax2.plot(data["Time"][1:], data["Value"][1:], label=k)
         else:
@@ -248,47 +250,47 @@ if __name__ == '__main__':
     pic_base = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'swimming_pool_pic')
     data_dict = read_all_data()
     print(data_dict.keys())
-    # los_high_list = {
-    #     220: {
-    #         "No Wave":data_dict['los_high_no_wave'][220][:400],
-    #         "Little Wave": data_dict['los_high_little_wave'][220][:400],
-    #         "Big Wave": data_dict['los_high_big_wave'][220][:400]
-    #     },
-    #     225: {
-    #         "No Wave": data_dict['los_high_no_wave'][225][:400],
-    #         "Little Wave": data_dict['los_high_little_wave'][225][:400],
-    #         "Big Wave": data_dict['los_high_big_wave'][225][:400]
-    #     },
-    #     229: {
-    #         "No Wave": data_dict['los_high_no_wave'][229][:400],
-    #         "Little Wave": data_dict['los_high_little_wave'][229][:400],
-    #         "Big Wave": data_dict['los_high_big_wave'][229][:400]
-    #     }
-    # }
-    # plot_data_list(los_high_list[220], "LOS High 220GHz", os.path.join(pic_base, "los_high_220.png"))
-    # plot_data_list(los_high_list[225], "LOS High 225GHz", os.path.join(pic_base, "los_high_225.png"))
-    # plot_data_list(los_high_list[229], "LOS High 229GHz", os.path.join(pic_base, "los_high_229.png"))
-    #
-    # nlos_high_list = {
-    #     220: {
-    #         "No Wave": data_dict['nlos_high_no_wave'][220][:400],
-    #         "Little Wave": data_dict['nlos_high_little_wave'][220][100:],
-    #         "Big Wave": data_dict['nlos_high_big_wave'][220][100:]
-    #     },
-    #     225: {
-    #         "No Wave": data_dict['nlos_high_no_wave'][225][:400],
-    #         "Little Wave": data_dict['nlos_high_little_wave'][225][0:400],
-    #         "Big Wave": data_dict['nlos_high_big_wave'][225][220:600]
-    #     },
-    #     229: {
-    #         "No Wave": data_dict['nlos_high_no_wave'][229][:400],
-    #         "Little Wave": data_dict['nlos_high_little_wave'][229][0:400],
-    #         "Big Wave": data_dict['nlos_high_big_wave'][229][150:550]
-    #     }
-    # }
-    # plot_data_list(nlos_high_list[220], "NLOS High 220GHz", os.path.join(pic_base, "nlos_high_220.png"))
-    # plot_data_list(nlos_high_list[225], "NLOS High 225GHz", os.path.join(pic_base, "nlos_high_225.png"))
-    # plot_data_list(nlos_high_list[229], "NLOS High 229GHz", os.path.join(pic_base, "nlos_high_229.png"))
+    los_high_list = {
+        220: {
+            "No Wave":data_dict['los_high_no_wave'][220][:400],
+            "Little Wave": data_dict['los_high_little_wave'][220][:400],
+            "Big Wave": data_dict['los_high_big_wave'][220][:400]
+        },
+        225: {
+            "No Wave": data_dict['los_high_no_wave'][225][:400],
+            "Little Wave": data_dict['los_high_little_wave'][225][:400],
+            "Big Wave": data_dict['los_high_big_wave'][225][:400]
+        },
+        229: {
+            "No Wave": data_dict['los_high_no_wave'][229][:400],
+            "Little Wave": data_dict['los_high_little_wave'][229][:400],
+            "Big Wave": data_dict['los_high_big_wave'][229][:400]
+        }
+    }
+    plot_data_list(los_high_list[220], "LOS High 220GHz", os.path.join(pic_base, "los_high_220.png"))
+    plot_data_list(los_high_list[225], "LOS High 225GHz", os.path.join(pic_base, "los_high_225.png"))
+    plot_data_list(los_high_list[229], "LOS High 229GHz", os.path.join(pic_base, "los_high_229.png"))
+
+    nlos_high_list = {
+        220: {
+            "No Wave": data_dict['nlos_high_no_wave'][220][:400],
+            "Little Wave": data_dict['nlos_high_little_wave'][220][100:],
+            "Big Wave": data_dict['nlos_high_big_wave'][220][100:]
+        },
+        225: {
+            "No Wave": data_dict['nlos_high_no_wave'][225][:400],
+            "Little Wave": data_dict['nlos_high_little_wave'][225][0:400],
+            "Big Wave": data_dict['nlos_high_big_wave'][225][220:600]
+        },
+        229: {
+            "No Wave": data_dict['nlos_high_no_wave'][229][:400],
+            "Little Wave": data_dict['nlos_high_little_wave'][229][0:400],
+            "Big Wave": data_dict['nlos_high_big_wave'][229][150:550]
+        }
+    }
+    plot_data_list(nlos_high_list[220], "NLOS High 220GHz", os.path.join(pic_base, "nlos_high_220.png"))
+    plot_data_list(nlos_high_list[225], "NLOS High 225GHz", os.path.join(pic_base, "nlos_high_225.png"))
+    plot_data_list(nlos_high_list[229], "NLOS High 229GHz", os.path.join(pic_base, "nlos_high_229.png"))
     #
     # # nlos_high_400m_list = {
     # #     220: {

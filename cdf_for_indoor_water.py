@@ -6,7 +6,7 @@ import pandas as pd
 from indoor_water_height import get_indoor_data_after_cut
 
 base_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "实验室水面实验", "时序")
-
+# base_path = '/Users/liou/project/thz/water/实验室水面实验/时序'
 
 def read_data(file_name):
     data = pd.read_excel(os.path.join(base_path, file_name), header=None)
@@ -119,21 +119,21 @@ def cdf_rice(data_list, save_path=None, title=None, noice_level=None):
     bin_centers13 = (bins13[:-1] + bins13[1:]) / 2
 
     # 绘制散点图
-    plt.scatter(bin_centers11, cdf11, color='r', s=0.5, linestyle=':', linewidth=1.5, label='No Wave Empirical CDFs')
-    plt.scatter(bin_centers12, cdf12, color='b', s=0.5, linestyle=':', linewidth=1.5, label='Small Wave Empirical CDFs')
+    # plt.scatter(bin_centers11, cdf11, color='r', s=0.5, linestyle=':', linewidth=1.5, label='No Wave Empirical CDFs')
+    # plt.scatter(bin_centers12, cdf12, color='b', s=0.5, linestyle=':', linewidth=1.5, label='Small Wave Empirical CDFs')
     plt.scatter(bin_centers13, cdf13, color='g', s=0.5, linestyle=':', linewidth=1.5, label='Big Wave Empirical CDFs')
 
     # Plot fitted Rician CDFs
-    plt.plot(x_values1, cdf_rician1, 'r-', linewidth=1, label='No Wave Fitted CDFs')
-    plt.plot(x_values2, cdf_rician2, 'b-', linewidth=1, label='Small Wave Fitted CDFs')
+    # plt.plot(x_values1, cdf_rician1, 'r-', linewidth=1, label='No Wave Fitted CDFs')
+    # plt.plot(x_values2, cdf_rician2, 'b-', linewidth=1, label='Small Wave Fitted CDFs')
     plt.plot(x_values3, cdf_rician3, 'g-', linewidth=1, label='Big Wave Fitted CDFs')
 
-    plt.plot(x_values1, cdf_rayleigh1, 'r--', linewidth=1, label='No Wave Fitted Rayleigh CDFs')
-    plt.plot(x_values2, cdf_rayleigh2, 'b--', linewidth=1, label='Small Wave Fitted Rayleigh CDFs')
+    # plt.plot(x_values1, cdf_rayleigh1, 'r--', linewidth=1, label='No Wave Fitted Rayleigh CDFs')
+    # plt.plot(x_values2, cdf_rayleigh2, 'b--', linewidth=1, label='Small Wave Fitted Rayleigh CDFs')
     plt.plot(x_values3, cdf_rayleigh3, 'g--', linewidth=1, label='Big Wave Fitted Rayleigh CDFs')
 
-    plt.plot(x_values1, cdf_weibull1, 'r-.', linewidth=1, label='No Wave Fitted Weibull CDFs')
-    plt.plot(x_values2, cdf_weibull2, 'b-.', linewidth=1, label='Small Wave Fitted Weibull CDFs')
+    # plt.plot(x_values1, cdf_weibull1, 'r-.', linewidth=1, label='No Wave Fitted Weibull CDFs')
+    # plt.plot(x_values2, cdf_weibull2, 'b-.', linewidth=1, label='Small Wave Fitted Weibull CDFs')
     plt.plot(x_values3, cdf_weibull3, 'g-.', linewidth=1, label='Big Wave Fitted Weibull CDFs')
 
     # # plt Power11, Power12, Power13, x-axis is the Number
@@ -143,7 +143,8 @@ def cdf_rice(data_list, save_path=None, title=None, noice_level=None):
 
     plt.xlabel(f'SNR')
     plt.ylabel('CDF')
-    plt.xlim([0, 25])
+    # 全部都是Weibull
+    # plt.xlim([15, 20])
     plt.legend()
     if title is not None:
         plt.title(title + f"\nK1={k_factor1:.2f}, K2={k_factor2:.2f}, K3={k_factor3:.2f}")
@@ -174,6 +175,7 @@ def cdf_for_indoor_water():
 
 
 def cdf_for_indoor_water_with_cut_data():
+    cut_data_base_path = os.path.join(os.path.dirname(__file__), 'indoor_water_after_cut_data')
     save_path_base = os.path.join(os.path.dirname(__file__), 'indoor_water_cdf_pic_after_cut')
     data_30, data_45 = get_indoor_data_after_cut()
 
@@ -191,6 +193,7 @@ def cdf_for_indoor_water_with_cut_data():
                     idx = 2
                 else:
                     idx = 0
+                wave_data.to_excel(os.path.join(cut_data_base_path, f'_{degree}度_{freq}GHz_{wave}.xlsx'))
                 data_list[idx] = wave_data
             cdf_rice([cut_data(x) for x in data_list],
                      save_path=os.path.join(save_path_base, f'_{degree}度_{freq}GHz.png'),
