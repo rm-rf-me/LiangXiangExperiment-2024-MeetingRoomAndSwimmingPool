@@ -165,84 +165,156 @@ def read_all_data():
 
 
 def plot_data_list(data_list, title, save_path=None):
-    cut_data_base_path = os.path.join(os.path.dirname(__file__), 'swimming_pool_after_cut_data')
-    plt.rcParams['figure.figsize'] = [12, 4]
+    # 设置全局字体为 Times New Roman
+    plt.rcParams.update({
+        'font.family': 'Times New Roman',
+        'font.size': 12,  # 增大默认字体
+        'mathtext.fontset': 'stix'
+    })
+    
+    # 设置图片尺寸和DPI
+    plt.rcParams['figure.figsize'] = [8, 4]
+    plt.rcParams['figure.dpi'] = 300
+    
+    # 创建图形和轴
     fig, ax1 = plt.subplots()
-    ax2 = ax1.twinx()
-    for k, data in data_list.items():
-        data.to_excel(os.path.join(cut_data_base_path, title + str(k) + ".xlsx"))
+    # ax2 = ax1.twinx()
+    
+    # 定义颜色方案，全部使用实线
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
+    
+    # 绘制数据
+    for i, (k, data) in enumerate(data_list.items()):
         if "Time" in data:
-            ax2.plot(data["Time"][1:], data["Value"][1:], label=k)
+            # ax2.plot(data["Time"][1:], data["Value"][1:]/2,
+            #         label=k,
+            #         color=colors[i % len(colors)],
+            #         linewidth=1.5)
+            pass
         else:
-            # 创建一个从0开始的新索引序列
-            x_values = np.arange(len(data[4][1:]))
-            ax1.plot(x_values, data[4][1:], label=k)
-    plt.title(title)
-    ax1.set_xlabel('Time Index')
-    ax1.tick_params(axis='x', rotation=45)
-    ax1.set_ylabel('Amplitude (dbm)')
-    ax2.set_ylabel('WaveHeight(mm)')
-    ax1.legend()
+            # 将索引转换为时间（秒）
+            x_values = np.arange(len(data[4][1:])) / 7.0  # 转换为秒
+            ax1.plot(x_values, data[4][1:]/2,
+                    label=k,
+                    color=colors[i % len(colors)],
+                    linewidth=1.5)
+    
+    # 设置标题
+    plt.title(title, pad=10, fontsize=14, fontweight='bold')
+    
+    # 设置轴标签，增大字体
+    ax1.set_xlabel('Time (s)', fontsize=12, labelpad=8)
+    ax1.set_ylabel('Amplitude (dBm)', fontsize=12, labelpad=8)
+    # ax2.set_ylabel('Wave Height (mm)', fontsize=12, labelpad=8)
+    
+    # 设置刻度，增大字体
+    ax1.tick_params(axis='both', direction='in', labelsize=11)
+    # ax2.tick_params(axis='both', direction='in', labelsize=11)
+    
+    # 添加网格线
+    ax1.grid(True, linestyle='--', alpha=0.3)
+
+    # ax1.set_ylim(-25, -5)
+    
+    # 优化图例位置，放在图内右上角
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    # lines2, labels2 = ax2.get_legend_handles_labels()
+    # ax1.legend(lines1 + lines2, labels1 + labels2,
+    #           loc='upper right',  # 改为右上角
+    #           frameon=True,
+    #           fontsize=10,
+    #           ncol=1)
+    ax1.legend(lines1, labels1,
+               loc='upper right',  # 改为右上角
+               frameon=True,
+               fontsize=10,
+               ncol=1)
+    
+    # 调整布局，确保所有元素都在图内
+    plt.tight_layout()
+    
+    # 保存图片
     if save_path:
-        plt.savefig(save_path)
+        plt.savefig(save_path, 
+                   bbox_inches='tight',
+                   pad_inches=0.1,
+                   dpi=300)
+    
     plt.show()
 
 def plot_data_list_with_wave_height(data_list, title, start_time, save_path=None):
-    # make this figure wider
+    # 设置全局字体为 Times New Roman
+    plt.rcParams.update({
+        'font.family': 'Times New Roman',
+        'font.size': 12,  # 增大默认字体
+        'mathtext.fontset': 'stix'
+    })
+    
     start_time = pd.to_datetime(start_time)
     
-    plt.rcParams['figure.figsize'] = [12, 4]
+    # 设置图片尺寸和DPI
+    plt.rcParams['figure.figsize'] = [8, 4]
+    plt.rcParams['figure.dpi'] = 300
+    
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
-
-    tmp_df = pd.concat(data_list.values())
-    tmp_df.to_excel(os.path.join(base_path, title + str(start_time) + "tmp.xlsx"))
-    print(f"file saved to {os.path.join(base_path, title + str(start_time) + 'tmp.xlsx')}")
-
+    
+    # 定义颜色方案
+    signal_color = '#1f77b4'  # 蓝色用于信号强度
+    wave_color = '#ff7f0e'    # 橙色用于波高
+    
     for k, data in data_list.items():
-        # plt.plot(data[1][1:].str.split().str.get(1), data[4][1:], label=k)
         if "Time" in data:
-            # 将 'Time' 列转换为 datetime，只包含时间部分
-            # data['Time'] = pd.to_datetime(data['Time'], format='%H:%M:%S.%f').dt.time
-            # 定义固定的日期
             fixed_date = datetime(2024, 7, 26).date()
-            # 将日期和时间组合成完整的 datetime
             data['DateTime'] = data['Time'].apply(lambda t: datetime.combine(fixed_date, t))
-            # 如果需要将 DateTime 列转换为时间戳
-            data['Timestamp'] = data['DateTime'].apply(lambda x: x.timestamp())
-
-            # 计算每个时间点与起始点的时间差，以秒为单位
             data['TimeDelta'] = data['DateTime'].apply(lambda x: (x - start_time).total_seconds() + 5)
-
-            ax2.plot(data["TimeDelta"][1:], data["Value"][1:], color='blue', label=k)
+            
+            ax2.plot(data["TimeDelta"][1:], data["Value"][1:], 
+                    color=wave_color, 
+                    label='Wave Height',
+                    linewidth=1.5)
         else:
             df = data[1:].copy()
             df['timestamp'] = pd.to_datetime(df[1])
-
-            # 对每秒的数据进行分组
-            df['group'] = df.groupby(df['timestamp'].dt.floor('S')).cumcount()
-
-            # 每秒内数据点的总数
-            df['count'] = df.groupby(df['timestamp'].dt.floor('S'))['timestamp'].transform('count')
-
-            # 计算出每个数据点应增加的毫秒数
-            df['milliseconds'] = (df['group'] * 1000 / df['count']).astype(int)
-
-            # 最终的带有毫秒的时间戳
-            df['new_timestamp'] = df['timestamp'] + pd.to_timedelta(df['milliseconds'], unit='ms')
-
-            # 计算每个时间点与起始点的时间差，以秒为单位
-            df['TimeDelta'] = df['new_timestamp'].apply(lambda x: (x - start_time).total_seconds())
-
-            ax1.plot(df['TimeDelta'], data[4][1:], color='red', label=k)
-    plt.title(title)
-    ax1.set_xlabel('X')
-    ax1.tick_params(axis='x', rotation=45)
-    ax1.set_ylabel('Amplitude (dbm)')
-    ax2.set_ylabel('WaveHeight(mm)')
-    ax1.legend()
+            df['TimeDelta'] = df['timestamp'].apply(lambda x: (x - start_time).total_seconds())
+            
+            ax1.plot(df['TimeDelta'], data[4][1:], 
+                    color=signal_color, 
+                    label='Signal Strength',
+                    linewidth=1.5)
+    
+    # 设置标题和标签，增大字体
+    plt.title(title, pad=10, fontsize=14, fontweight='bold')
+    ax1.set_xlabel('Time (s)', fontsize=12, labelpad=8)
+    ax1.set_ylabel('Amplitude (dBm)', fontsize=12, labelpad=8)
+    ax2.set_ylabel('Wave Height (mm)', fontsize=12, labelpad=8)
+    
+    # 设置刻度，增大字体
+    ax1.tick_params(axis='both', direction='in', labelsize=11)
+    ax2.tick_params(axis='both', direction='in', labelsize=11)
+    
+    # 添加网格线
+    ax1.grid(True, linestyle='--', alpha=0.3)
+    
+    # 优化图例位置，放在图内右上角
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines1 + lines2, labels1 + labels2, 
+              loc='upper right',  # 改为右上角
+              frameon=True,
+              fontsize=10,
+              ncol=1)
+    
+    # 调整布局
+    plt.tight_layout()
+    
+    # 保存图片
     if save_path:
-        plt.savefig(save_path)
+        plt.savefig(save_path, 
+                   bbox_inches='tight',
+                   pad_inches=0.1,
+                   dpi=300)
+    
     plt.show()
 
 
@@ -250,52 +322,54 @@ if __name__ == '__main__':
     pic_base = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'swimming_pool_pic')
     data_dict = read_all_data()
     print(data_dict.keys())
+    
+    # Los High频段数据
     los_high_list = {
         220: {
-            "No Wave":data_dict['los_high_no_wave'][220][:400],
-            "Little Wave": data_dict['los_high_little_wave'][220][:400],
+            "No Wave": data_dict['los_high_no_wave'][220][:400],
+            "Small wave": data_dict['los_high_little_wave'][220][:400],
             "Big Wave": data_dict['los_high_big_wave'][220][:400]
         },
         225: {
             "No Wave": data_dict['los_high_no_wave'][225][:400],
-            "Little Wave": data_dict['los_high_little_wave'][225][:400],
+            "Small wave": data_dict['los_high_little_wave'][225][:400],
             "Big Wave": data_dict['los_high_big_wave'][225][:400]
         },
         229: {
             "No Wave": data_dict['los_high_no_wave'][229][:400],
-            "Little Wave": data_dict['los_high_little_wave'][229][:400],
+            "Small wave": data_dict['los_high_little_wave'][229][:400],
             "Big Wave": data_dict['los_high_big_wave'][229][:400]
         }
     }
-    plot_data_list(los_high_list[220], "LOS High 220GHz", os.path.join(pic_base, "los_high_220.png"))
-    plot_data_list(los_high_list[225], "LOS High 225GHz", os.path.join(pic_base, "los_high_225.png"))
-    plot_data_list(los_high_list[229], "LOS High 229GHz", os.path.join(pic_base, "los_high_229.png"))
+    plot_data_list(los_high_list[220], "Los 220GHz", os.path.join(pic_base, "los_high_220.png"))
+    plot_data_list(los_high_list[225], "Los 225GHz", os.path.join(pic_base, "los_high_225.png"))
+    plot_data_list(los_high_list[229], "Los 229GHz", os.path.join(pic_base, "los_high_229.png"))
 
     nlos_high_list = {
         220: {
             "No Wave": data_dict['nlos_high_no_wave'][220][:400],
-            "Little Wave": data_dict['nlos_high_little_wave'][220][100:],
+            "Small wave": data_dict['nlos_high_little_wave'][220][100:],
             "Big Wave": data_dict['nlos_high_big_wave'][220][100:]
         },
         225: {
             "No Wave": data_dict['nlos_high_no_wave'][225][:400],
-            "Little Wave": data_dict['nlos_high_little_wave'][225][0:400],
+            "Small wave": data_dict['nlos_high_little_wave'][225][0:400],
             "Big Wave": data_dict['nlos_high_big_wave'][225][220:600]
         },
         229: {
             "No Wave": data_dict['nlos_high_no_wave'][229][:400],
-            "Little Wave": data_dict['nlos_high_little_wave'][229][0:400],
+            "Small wave": data_dict['nlos_high_little_wave'][229][0:400],
             "Big Wave": data_dict['nlos_high_big_wave'][229][150:550]
         }
     }
-    plot_data_list(nlos_high_list[220], "NLOS High 220GHz", os.path.join(pic_base, "nlos_high_220.png"))
-    plot_data_list(nlos_high_list[225], "NLOS High 225GHz", os.path.join(pic_base, "nlos_high_225.png"))
-    plot_data_list(nlos_high_list[229], "NLOS High 229GHz", os.path.join(pic_base, "nlos_high_229.png"))
+    plot_data_list(nlos_high_list[220], "N-Los 220GHz", os.path.join(pic_base, "nlos_high_220.png"))
+    plot_data_list(nlos_high_list[225], "N-Los 225GHz", os.path.join(pic_base, "nlos_high_225.png"))
+    plot_data_list(nlos_high_list[229], "N-Los 229GHz", os.path.join(pic_base, "nlos_high_229.png"))
     #
     # # nlos_high_400m_list = {
     # #     220: {
     # #         "No Wave": data_dict['nlos_high_400m'][220][0],
-    # #         "Little Wave": data_dict['nlos_high_400m'][220][1]
+    # #         "Small wave": data_dict['nlos_high_400m'][220][1]
     # #     },
     # #     225: data_dict['nlos_high_400m'][225],
     # #     229: data_dict['nlos_high_400m'][229]
@@ -308,66 +382,66 @@ if __name__ == '__main__':
     # }
     # wave_height_data = pd.read_excel(os.path.join(os.path.dirname(os.path.abspath(__file__)), "swimming_pool_wave_height", "wave_height_data.xlsx"))
     #
-    # plot_data_list(nlos_high_people_swimmming_list, "NLOS High 400m People Swimming", os.path.join(pic_base, "nlos_high_400m_people_swimming.png"))
+    # plot_data_list(nlos_high_people_swimmming_list, "N-Los High 400m People Swimming", os.path.join(pic_base, "nlos_high_400m_people_swimming.png"))
     # plot_data_list_with_wave_height(
     #     {"220-1": data_dict['nlos_high_400m'][220][0], "wave_height": filter_by_time_range(wave_height_data, data_dict['nlos_high_400m'][220][0][1][1].split()[1]+".000", data_dict['nlos_high_400m'][220][0][1][len(data_dict['nlos_high_400m'][220][0][1])-1].split()[1]+".000")},
-    #     "NLOS High 400m People Swimming 220-1",
+    #     "N-Los High 400m People Swimming 220-1",
     #     data_dict['nlos_high_400m'][220][0][1][1] + ".000",
     #     os.path.join(pic_base, "nlos_high_400m_people_swimming_220-1.png"))
     # plot_data_list_with_wave_height(
     #     {"220-2": data_dict['nlos_high_400m'][220][1], "wave_height": filter_by_time_range(wave_height_data, data_dict['nlos_high_400m'][220][1][1][1].split()[1]+".000", data_dict['nlos_high_400m'][220][1][1][len(data_dict['nlos_high_400m'][220][1][1])-1].split()[1]+".000")},
-    #     "NLOS High 400m People Swimming 220-2",
+    #     "N-Los High 400m People Swimming 220-2",
     #     data_dict['nlos_high_400m'][220][1][1][1] + ".000",
     #     os.path.join(pic_base, "nlos_high_400m_people_swimming_220-2.png"))
     # plot_data_list_with_wave_height(
     #     {"225": data_dict['nlos_high_400m'][225], "wave_height": filter_by_time_range(wave_height_data, data_dict['nlos_high_400m'][225][1][1].split()[1]+".000", data_dict['nlos_high_400m'][225][1][len(data_dict['nlos_high_400m'][225][1])-1].split()[1]+".000")},
-    #     "NLOS High 400m People Swimming 225",
+    #     "N-Los High 400m People Swimming 225",
     #     data_dict['nlos_high_400m'][225][1][1] + ".000", os.path.join(pic_base, "nlos_high_400m_people_swimming_225.png"))
     # plot_data_list_with_wave_height(
     #     {"229": data_dict['nlos_high_400m'][229], "wave_height": filter_by_time_range(wave_height_data, data_dict['nlos_high_400m'][229][1][1].split()[1]+".000", data_dict['nlos_high_400m'][229][1][len(data_dict['nlos_high_400m'][229][1])-1].split()[1]+".000")},
-    #     "NLOS High 400m People Swimming 229",
+    #     "N-Los High 400m People Swimming 229",
     #     data_dict['nlos_high_400m'][229][1][1] + ".000", os.path.join(pic_base, "nlos_high_400m_people_swimming_229.png"))
 
     los_low_list = {
         140: {
             "No Wave": data_dict['los_low_no_wave'][140][:400],
-            "Little Wave": data_dict['los_low_little_wave'][140][:400],
+            "Small wave": data_dict['los_low_little_wave'][140][:400],
             "Big Wave": data_dict['los_low_big_wave'][140][50:400]
         },
         120: {
             "No Wave": data_dict['los_low_no_wave'][120][:400],
-            "Little Wave": data_dict['los_low_little_wave'][120][:400],
+            "Small wave": data_dict['los_low_little_wave'][120][:400],
             "Big Wave": data_dict['los_low_big_wave'][120][100:450]
         },
         160: {
             "No Wave": data_dict['los_low_no_wave'][160][:400],
-            "Little Wave": data_dict['los_low_little_wave'][160][:400],
+            "Small wave": data_dict['los_low_little_wave'][160][:400],
             "Big Wave": data_dict['los_low_big_wave'][160][50:450]
         }
     }
-    plot_data_list(los_low_list[140], "LOS Low 140GHz", os.path.join(pic_base, "los_low_140.png"))
-    plot_data_list(los_low_list[120], "LOS Low 120GHz", os.path.join(pic_base, "los_low_120.png"))
-    plot_data_list(los_low_list[160], "LOS Low 160GHz", os.path.join(pic_base, "los_low_160.png"))
+    plot_data_list(los_low_list[140], "Los 140GHz", os.path.join(pic_base, "los_low_140.png"))
+    plot_data_list(los_low_list[120], "Los 120GHz", os.path.join(pic_base, "los_low_120.png"))
+    plot_data_list(los_low_list[160], "Los 160GHz", os.path.join(pic_base, "los_low_160.png"))
 
     nlos_low_list = {
         140: {
             "No Wave": data_dict['nlos_low_no_wave'][140][100:500],
-            "Little Wave": data_dict['nlos_low_little_wave'][140][100:450],
+            "Small wave": data_dict['nlos_low_little_wave'][140][100:450],
             "Big Wave": data_dict['nlos_low_big_wave'][140][100:450]
         },
         120: {
             "No Wave": data_dict['nlos_low_no_wave'][120][:400],
-            "Little Wave": data_dict['nlos_low_little_wave'][120][:400],
+            "Small wave": data_dict['nlos_low_little_wave'][120][:400],
             "Big Wave": data_dict['nlos_low_big_wave'][120][100:450]
         },
         160: {
             "No Wave": data_dict['nlos_low_no_wave'][160][:400],
-            "Little Wave": data_dict['nlos_low_little_wave'][160][50:450],
+            "Small wave": data_dict['nlos_low_little_wave'][160][50:450],
             "Big Wave": data_dict['nlos_low_big_wave'][160][50:450]
         }
     }
-    plot_data_list(nlos_low_list[140], "NLOS Low 140GHz", os.path.join(pic_base, "nlos_low_140.png"))
-    plot_data_list(nlos_low_list[120], "NLOS Low 120GHz", os.path.join(pic_base, "nlos_low_120.png"))
-    plot_data_list(nlos_low_list[160], "NLOS Low 160GHz", os.path.join(pic_base, "nlos_low_160.png"))
+    plot_data_list(nlos_low_list[140], "N-Los 140GHz", os.path.join(pic_base, "nlos_low_140.png"))
+    plot_data_list(nlos_low_list[120], "N-Los 120GHz", os.path.join(pic_base, "nlos_low_120.png"))
+    plot_data_list(nlos_low_list[160], "N-Los 160GHz", os.path.join(pic_base, "nlos_low_160.png"))
 
 

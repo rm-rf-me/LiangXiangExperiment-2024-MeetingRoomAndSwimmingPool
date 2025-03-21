@@ -41,6 +41,17 @@ def cut_data(data_dict, start=0, length=None):
 
 
 def cdf_rice(data_list, save_path=None, title=None, noice_level=None):
+    # 设置全局字体为 Times New Roman
+    plt.rcParams.update({
+        'font.family': 'Times New Roman',
+        'font.size': 12,  # 增大默认字体
+        'mathtext.fontset': 'stix'
+    })
+    
+    # 设置图片尺寸为正方形
+    plt.rcParams['figure.figsize'] = [4, 4]  # 修改为正方形尺寸
+    plt.rcParams['figure.dpi'] = 300
+    
     data1, data2, data3 = data_list
     rmax1 = min(len(data1), len(data2), len(data3)) - 1
 
@@ -96,14 +107,6 @@ def cdf_rice(data_list, save_path=None, title=None, noice_level=None):
     plt.figure()
     plt.grid(False)
 
-    # Plot empirical CDFs
-    # h1 = plt.hist(power11, bins=200, density=True, cumulative=True, histtype='step', color='r', linestyle=':',
-    #               linewidth=2, label='No Wave Empirical CDFs')
-    # h2 = plt.hist(power12, bins=200, density=True, cumulative=True, histtype='step', color='b', linestyle=':',
-    #               linewidth=2, label='Small Wave Empirical CDFs')
-    # h3 = plt.hist(power13, bins=200, density=True, cumulative=True, histtype='step', color='g', linestyle=':',
-    #               linewidth=2, label='Big Wave Empirical CDFs')
-
     counts11, bins11 = np.histogram(power11, bins=200, density=True)
     counts12, bins12 = np.histogram(power12, bins=200, density=True)
     counts13, bins13 = np.histogram(power13, bins=200, density=True)
@@ -118,38 +121,45 @@ def cdf_rice(data_list, save_path=None, title=None, noice_level=None):
     bin_centers12 = (bins12[:-1] + bins12[1:]) / 2
     bin_centers13 = (bins13[:-1] + bins13[1:]) / 2
 
-    # 绘制散点图
-    # plt.scatter(bin_centers11, cdf11, color='r', s=0.5, linestyle=':', linewidth=1.5, label='No Wave Empirical CDFs')
-    # plt.scatter(bin_centers12, cdf12, color='b', s=0.5, linestyle=':', linewidth=1.5, label='Small Wave Empirical CDFs')
-    plt.scatter(bin_centers13, cdf13, color='g', s=0.5, linestyle=':', linewidth=1.5, label='Big Wave Empirical CDFs')
+    # 绘制散点图，使用更小的点和统一的实线
+    plt.scatter(bin_centers11, cdf11, color='#2ca02c', s=0.5, label='No Wave (Measured)')
+    plt.scatter(bin_centers12, cdf12, color='#ff7f0e', s=0.5, label='Small Wave (Measured)')
+    plt.scatter(bin_centers13, cdf13, color='#1f77b4', s=0.5, label='Big Wave (Measured)')
 
-    # Plot fitted Rician CDFs
-    # plt.plot(x_values1, cdf_rician1, 'r-', linewidth=1, label='No Wave Fitted CDFs')
-    # plt.plot(x_values2, cdf_rician2, 'b-', linewidth=1, label='Small Wave Fitted CDFs')
-    plt.plot(x_values3, cdf_rician3, 'g-', linewidth=1, label='Big Wave Fitted CDFs')
+    # 绘制拟合曲线，使用实线
+    plt.plot(x_values1, cdf_weibull1, color='#2ca02c', linewidth=1, label='No Wave (Weibull)')
+    plt.plot(x_values2, cdf_weibull2, color='#ff7f0e', linewidth=1, label='Small Wave (Weibull)')
+    plt.plot(x_values3, cdf_weibull3, color='#1f77b4', linewidth=1, label='Big Wave (Weibull)')
 
-    # plt.plot(x_values1, cdf_rayleigh1, 'r--', linewidth=1, label='No Wave Fitted Rayleigh CDFs')
-    # plt.plot(x_values2, cdf_rayleigh2, 'b--', linewidth=1, label='Small Wave Fitted Rayleigh CDFs')
-    plt.plot(x_values3, cdf_rayleigh3, 'g--', linewidth=1, label='Big Wave Fitted Rayleigh CDFs')
-
-    # plt.plot(x_values1, cdf_weibull1, 'r-.', linewidth=1, label='No Wave Fitted Weibull CDFs')
-    # plt.plot(x_values2, cdf_weibull2, 'b-.', linewidth=1, label='Small Wave Fitted Weibull CDFs')
-    plt.plot(x_values3, cdf_weibull3, 'g-.', linewidth=1, label='Big Wave Fitted Weibull CDFs')
-
-    # # plt Power11, Power12, Power13, x-axis is the Number
-    # plt.plot(np.arange(rmax1), Power11, 'r-', linewidth=1, label='No Wave Power')
-    # plt.plot(np.arange(rmax1), Power12, 'b-', linewidth=1, label='Small Wave Power')
-    # plt.plot(np.arange(rmax1), Power13, 'g-', linewidth=1, label='Big Wave Power')
-
-    plt.xlabel(f'SNR')
-    plt.ylabel('CDF')
-    # 全部都是Weibull
-    # plt.xlim([15, 20])
-    plt.legend()
+    # 设置轴标签和标题，使用更大的字体
+    plt.xlabel('SNR', fontsize=12, labelpad=8)
+    plt.ylabel('CDF', fontsize=12, labelpad=8)
+    
     if title is not None:
-        plt.title(title + f"\nK1={k_factor1:.2f}, K2={k_factor2:.2f}, K3={k_factor3:.2f}")
-    if save_path is not None:
-        plt.savefig(save_path)
+        plt.title(title, pad=10, fontsize=14, fontweight='bold')
+    
+    # 设置刻度，增大字体
+    plt.tick_params(axis='both', direction='in', labelsize=11)
+    
+    # 添加网格线
+    plt.grid(True, linestyle='--', alpha=0.3)
+    
+    # 优化图例位置和样式，改为右下角
+    plt.legend(loc='lower right',  # 改为 lower right
+              frameon=True,
+              fontsize=10,
+              ncol=1)
+    
+    # 调整布局，保持正方形比例
+    plt.tight_layout()
+    
+    # 保存图片时保持正方形比例
+    if save_path:
+        plt.savefig(save_path, 
+                   bbox_inches='tight',
+                   pad_inches=0.1,
+                   dpi=300)
+    
     plt.show()
 
 
@@ -177,27 +187,46 @@ def cdf_for_indoor_water():
 def cdf_for_indoor_water_with_cut_data():
     cut_data_base_path = os.path.join(os.path.dirname(__file__), 'indoor_water_after_cut_data')
     save_path_base = os.path.join(os.path.dirname(__file__), 'indoor_water_cdf_pic_after_cut')
+    
+    # 确保输出目录存在
+    os.makedirs(cut_data_base_path, exist_ok=True)
+    os.makedirs(save_path_base, exist_ok=True)
+    
     data_30, data_45 = get_indoor_data_after_cut()
 
     all_data = {
         '30': data_30,
         '45': data_45
     }
+    
     for degree, degree_list in all_data.items():
         for freq, freq_data in degree_list.items():
-            data_list = [None, None, None]
-            for wave, wave_data in freq_data.items():
-                if wave == 'Little Wave':
-                    idx = 1
-                elif wave == 'Big Wave':
-                    idx = 2
+            data_list = []
+            # 确保按照固定顺序处理数据
+            wave_types = ['No Wave', 'Small Wave', 'Big Wave']
+            for wave_type in wave_types:
+                if wave_type in freq_data:
+                    wave_data = freq_data[wave_type]
+                    if wave_data is not None:
+                        # 保存切分后的数据
+                        save_path = os.path.join(cut_data_base_path, f'_{degree}度_{freq}GHz_{wave_type}.xlsx')
+                        wave_data.to_excel(save_path)
+                        data_list.append(wave_data)
+                    else:
+                        print(f"Warning: No data for {degree}度 {freq}GHz {wave_type}")
                 else:
-                    idx = 0
-                wave_data.to_excel(os.path.join(cut_data_base_path, f'_{degree}度_{freq}GHz_{wave}.xlsx'))
-                data_list[idx] = wave_data
-            cdf_rice([cut_data(x) for x in data_list],
-                     save_path=os.path.join(save_path_base, f'_{degree}度_{freq}GHz.png'),
-                     title=f'{degree}Degree, {freq}GHz', noice_level=39 if degree == '30' else 41)
+                    print(f"Warning: Missing {wave_type} data for {degree}度 {freq}GHz")
+            
+            # 只在有足够数据时绘图
+            if len(data_list) == 3:
+                cdf_rice(
+                    [cut_data(x) for x in data_list],
+                    save_path=os.path.join(save_path_base, f'_{degree}度_{freq}GHz.png'),
+                    title=f'{degree}Degree, {freq}GHz',
+                    noice_level=39 if degree == '30' else 41
+                )
+            else:
+                print(f"Skipping plot for {degree}度 {freq}GHz due to insufficient data")
 
 
 if __name__ == '__main__':

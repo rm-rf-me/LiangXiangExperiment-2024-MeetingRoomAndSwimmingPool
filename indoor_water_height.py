@@ -73,9 +73,12 @@ base_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '实验室�
 
 def read_data(file_name):
     data = pd.read_excel(os.path.join(base_path, file_name), header=None)
+    # 创建数据的副本以避免 SettingWithCopyWarning
+    data = data.copy()
+    # 使用 loc 来正确设置值
     for i in range(len(data)):
-        if type(data[4][i]) == float and data[4][i] < -45:
-            data[4][i] = data[4][i-1] if i > 0 else -40
+        if isinstance(data.loc[i, 4], float) and data.loc[i, 4] < -45:
+            data.loc[i, 4] = data.loc[i-1, 4] if i > 0 else -40
     return data
 
 
@@ -137,24 +140,78 @@ def read_all_data():
 
 
 def plot_data_list(data_list, title, save_path=None):
-    plt.rcParams['figure.figsize'] = [12, 4]
+    # 设置全局字体为 Times New Roman
+    plt.rcParams.update({
+        'font.family': 'Times New Roman',
+        'font.size': 12,
+        'mathtext.fontset': 'stix'
+    })
+    
+    # 设置图片尺寸和DPI
+    plt.rcParams['figure.figsize'] = [8, 4]
+    plt.rcParams['figure.dpi'] = 300
+    
+    # 创建图形和轴
     fig, ax1 = plt.subplots()
-    ax2 = ax1.twinx()
-    for k, data in data_list.items():
+    
+    # 定义颜色方案
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
+    
+    # 绘制数据
+    for i, (k, data) in enumerate(data_list.items()):
         if "Time" in data:
-            ax2.plot(data["Time"][1:], data["Value"][1:], label=k)
+            pass
         else:
-            # 创建一个从0开始的新索引序列
-            x_values = np.arange(len(data[4][1:]))
-            ax1.plot(x_values, data[4][1:], label=k)
-    plt.title(title)
-    ax1.set_xlabel('Time Index')
-    ax1.tick_params(axis='x', rotation=45)
-    ax1.set_ylabel('Amplitude (dbm)')
-    ax2.set_ylabel('WaveHeight(mm)')
-    ax1.legend()
+            # 将索引转换为时间（秒）
+            x_values = np.arange(len(data[4][1:])) / 7.0  # 转换为秒
+            
+            # 计算平均值
+            mean_value = np.mean(data[4][1:]/2)
+            
+            # 绘制半透明的原始数据
+            ax1.plot(x_values, data[4][1:]/2,
+                    label=k,
+                    color=colors[i % len(colors)],
+                    linewidth=1,
+                    alpha=0.3)  # 设置透明度
+            
+            # 绘制平均值线
+            ax1.axhline(y=mean_value, 
+                       color=colors[i % len(colors)],
+                       linewidth=2,
+                       label=f'{k} Mean ({mean_value:.1f} dBm)')
+    
+    # 设置标题
+    plt.title(title, pad=10, fontsize=14, fontweight='bold')
+    
+    # 设置轴标签，增大字体
+    ax1.set_xlabel('Time (s)', fontsize=12, labelpad=8)
+    ax1.set_ylabel('Amplitude (dBm)', fontsize=12, labelpad=8)
+    
+    # 设置刻度，增大字体
+    ax1.tick_params(axis='both', direction='in', labelsize=11)
+    
+    # 添加网格线
+    ax1.grid(True, linestyle='--', alpha=0.3)
+    
+    # 优化图例位置和样式
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    ax1.legend(lines1, labels1,
+              loc='upper right',
+              frameon=True,
+              fontsize=10,
+              ncol=1)
+    
+    # 调整布局
+    plt.tight_layout()
+    
+    # 保存图片
     if save_path:
-        plt.savefig(save_path)
+        plt.savefig(save_path, 
+                   bbox_inches='tight',
+                   pad_inches=0.1,
+                   dpi=300)
+    
     plt.show()
 
 
@@ -224,64 +281,64 @@ def get_indoor_data_after_cut():
     nlos_30_little_list = {
         120: {
             "No Wave": data_dict['nlos_30_no_wave'][120][100:300],
-            "Little Wave": data_dict['nlos_30_little_wave'][120][200:600],
+            "Small Wave": data_dict['nlos_30_little_wave'][120][200:600],
             "Big Wave": data_dict['nlos_30_big_wave'][120][200:600]
         },
         140: {
             "No Wave": data_dict['nlos_30_no_wave'][140][400:600],
-            "Little Wave": data_dict['nlos_30_little_wave'][140][200:600],
+            "Small Wave": data_dict['nlos_30_little_wave'][140][200:600],
             "Big Wave": data_dict['nlos_30_big_wave'][140][200:600]
         },
         160: {
             "No Wave": data_dict['nlos_30_no_wave'][160][350:550],
-            "Little Wave": data_dict['nlos_30_little_wave'][160][200:600],
+            "Small Wave": data_dict['nlos_30_little_wave'][160][200:600],
             "Big Wave": data_dict['nlos_30_big_wave'][160][100:500]
         },
         221: {
             "No Wave": data_dict['nlos_30_no_wave'][221][250:450],
-            "Little Wave": data_dict['nlos_30_little_wave'][221][400:800],
+            "Small Wave": data_dict['nlos_30_little_wave'][221][400:800],
             "Big Wave": data_dict['nlos_30_big_wave'][221][200:600]
         },
         260: {
             "No Wave": data_dict['nlos_30_no_wave'][260][350:450],
-            "Little Wave": data_dict['nlos_30_little_wave'][260][200:600],
+            "Small Wave": data_dict['nlos_30_little_wave'][260][200:600],
             "Big Wave": data_dict['nlos_30_big_wave'][260][100:500]
         },
         320: {
             "No Wave": data_dict['nlos_30_no_wave'][320][300:500],
-            "Little Wave": data_dict['nlos_30_little_wave'][320][200:600],
+            "Small Wave": data_dict['nlos_30_little_wave'][320][200:600],
             "Big Wave": data_dict['nlos_30_big_wave'][320][400:800]
         }
     }
     nlos_45_little_list = {
         120: {
             "No Wave": data_dict['nlos_45_no_wave'][120][150:350],
-            "Little Wave": data_dict['nlos_45_little_wave'][120][100:500],
+            "Small Wave": data_dict['nlos_45_little_wave'][120][100:500],
             "Big Wave": data_dict['nlos_45_big_wave'][120][100:500]
         },
         140: {
             "No Wave": data_dict['nlos_45_no_wave'][140][200:400],
-            "Little Wave": data_dict['nlos_45_little_wave'][140][100:500],
+            "Small Wave": data_dict['nlos_45_little_wave'][140][100:500],
             "Big Wave": data_dict['nlos_45_big_wave'][140][100:500]
         },
         160: {
             "No Wave": data_dict['nlos_45_no_wave'][160][280:380],
-            "Little Wave": data_dict['nlos_45_little_wave'][160][200:600],
+            "Small Wave": data_dict['nlos_45_little_wave'][160][200:600],
             "Big Wave": data_dict['nlos_45_big_wave'][160][200:600]
         },
         221: {
             "No Wave": data_dict['nlos_45_no_wave'][221][300:500],
-            "Little Wave": data_dict['nlos_45_little_wave'][221][400:800],
+            "Small Wave": data_dict['nlos_45_little_wave'][221][400:800],
             "Big Wave": data_dict['nlos_45_big_wave'][221][100:500]
         },
         260: {
             "No Wave": data_dict['nlos_45_no_wave'][260][480:580],
-            "Little Wave": data_dict['nlos_45_little_wave'][260][600:1000],
+            "Small Wave": data_dict['nlos_45_little_wave'][260][600:1000],
             "Big Wave": data_dict['nlos_45_big_wave'][260][200:600]
         },
         320: {
             "No Wave": data_dict['nlos_45_no_wave'][320][800:900],
-            "Little Wave": data_dict['nlos_45_little_wave'][320][600:1000],
+            "Small Wave": data_dict['nlos_45_little_wave'][320][600:1000],
             "Big Wave": data_dict['nlos_45_big_wave'][320][200:600]
         }
     }
@@ -295,78 +352,78 @@ if __name__ == '__main__':
 
     nlos_30_little_list = {
         120: {
-            # "No Wave": data_dict['nlos_30_no_wave'][120][100:300],
-            "Little Wave": data_dict['nlos_30_little_wave'][120][200:600],
+            "No Wave": data_dict['nlos_30_no_wave'][120][100:300],
+            "Small Wave": data_dict['nlos_30_little_wave'][120][200:600],
             "Big Wave": data_dict['nlos_30_big_wave'][120][200:600]
         },
         140: {
-            # "No Wave": data_dict['nlos_30_no_wave'][140][400:600],
-            "Little Wave": data_dict['nlos_30_little_wave'][140][200:600],
+            "No Wave": data_dict['nlos_30_no_wave'][140][400:600],
+            "Small Wave": data_dict['nlos_30_little_wave'][140][200:600],
             "Big Wave": data_dict['nlos_30_big_wave'][140][200:600]
         },
         160: {
-            # "No Wave": data_dict['nlos_30_no_wave'][160][350:550],
-            "Little Wave": data_dict['nlos_30_little_wave'][160][200:600],
+            "No Wave": data_dict['nlos_30_no_wave'][160][350:550],
+            "Small Wave": data_dict['nlos_30_little_wave'][160][200:600],
             "Big Wave": data_dict['nlos_30_big_wave'][160][100:500]
         },
         221: {
-            # "No Wave": data_dict['nlos_30_no_wave'][221][250:450],
-            "Little Wave": data_dict['nlos_30_little_wave'][221][400:800],
+            "No Wave": data_dict['nlos_30_no_wave'][221][250:450],
+            "Small Wave": data_dict['nlos_30_little_wave'][221][400:800],
             "Big Wave": data_dict['nlos_30_big_wave'][221][200:600]
         },
         260: {
-            # "No Wave": data_dict['nlos_30_no_wave'][260][350:450],
-            "Little Wave": data_dict['nlos_30_little_wave'][260][200:600],
+            "No Wave": data_dict['nlos_30_no_wave'][260][350:450],
+            "Small Wave": data_dict['nlos_30_little_wave'][260][200:600],
             "Big Wave": data_dict['nlos_30_big_wave'][260][100:500]
         },
         320: {
-            # "No Wave": data_dict['nlos_30_no_wave'][320][300:500],
-            "Little Wave": data_dict['nlos_30_little_wave'][320][200:600],
+            "No Wave": data_dict['nlos_30_no_wave'][320][300:500],
+            "Small Wave": data_dict['nlos_30_little_wave'][320][200:600],
             "Big Wave": data_dict['nlos_30_big_wave'][320][400:800]
         }
     }
-    plot_data_list(nlos_30_little_list[120], "nLOS 30 120GHz", os.path.join(pic_base, "nlos_30_120.png"))
-    plot_data_list(nlos_30_little_list[140], "nLOS 30 140GHz", os.path.join(pic_base, "nlos_30_140.png"))
-    plot_data_list(nlos_30_little_list[160], "nLOS 30 160GHz", os.path.join(pic_base, "nlos_30_160.png"))
-    plot_data_list(nlos_30_little_list[221], "nLOS 30 221GHz", os.path.join(pic_base, "nlos_30_221.png"))
-    plot_data_list(nlos_30_little_list[260], "nLOS 30 260GHz", os.path.join(pic_base, "nlos_30_260.png"))
-    plot_data_list(nlos_30_little_list[320], "nLOS 30 320GHz", os.path.join(pic_base, "nlos_30_320.png"))
+    plot_data_list(nlos_30_little_list[120], "N-Los 30 120GHz", os.path.join(pic_base, "nlos_30_120.png"))
+    plot_data_list(nlos_30_little_list[140], "N-Los 30 140GHz", os.path.join(pic_base, "nlos_30_140.png"))
+    plot_data_list(nlos_30_little_list[160], "N-Los 30 160GHz", os.path.join(pic_base, "nlos_30_160.png"))
+    plot_data_list(nlos_30_little_list[221], "N-Los 30 221GHz", os.path.join(pic_base, "nlos_30_221.png"))
+    plot_data_list(nlos_30_little_list[260], "N-Los 30 260GHz", os.path.join(pic_base, "nlos_30_260.png"))
+    plot_data_list(nlos_30_little_list[320], "N-Los 30 320GHz", os.path.join(pic_base, "nlos_30_320.png"))
 
     nlos_45_little_list = {
         120: {
-            # "No Wave": data_dict['nlos_45_no_wave'][120][150:350],
-            "Little Wave": data_dict['nlos_45_little_wave'][120][100:500],
+            "No Wave": data_dict['nlos_45_no_wave'][120][150:350],
+            "Small Wave": data_dict['nlos_45_little_wave'][120][100:500],
             "Big Wave": data_dict['nlos_45_big_wave'][120][100:500]
         },
         140: {
-            # "No Wave": data_dict['nlos_45_no_wave'][140][200:400],
-            "Little Wave": data_dict['nlos_45_little_wave'][140][100:500],
+            "No Wave": data_dict['nlos_45_no_wave'][140][200:400],
+            "Small Wave": data_dict['nlos_45_little_wave'][140][100:500],
             "Big Wave": data_dict['nlos_45_big_wave'][140][100:500]
         },
         160: {
-            # "No Wave": data_dict['nlos_45_no_wave'][160][280:380],
-            "Little Wave": data_dict['nlos_45_little_wave'][160][200:600],
+            "No Wave": data_dict['nlos_45_no_wave'][160][280:380],
+            "Small Wave": data_dict['nlos_45_little_wave'][160][200:600],
             "Big Wave": data_dict['nlos_45_big_wave'][160][200:600]
         },
         221: {
-            # "No Wave": data_dict['nlos_45_no_wave'][221][300:500],
-            "Little Wave": data_dict['nlos_45_little_wave'][221][400:800],
+            "No Wave": data_dict['nlos_45_no_wave'][221][300:500],
+            "Small Wave": data_dict['nlos_45_little_wave'][221][400:800],
             "Big Wave": data_dict['nlos_45_big_wave'][221][100:500]
         },
         260: {
-            # "No Wave": data_dict['nlos_45_no_wave'][260][480:580],
-            "Little Wave": data_dict['nlos_45_little_wave'][260][600:1000],
+            "No Wave": data_dict['nlos_45_no_wave'][260][480:580],
+            "Small Wave": data_dict['nlos_45_little_wave'][260][600:1000],
             "Big Wave": data_dict['nlos_45_big_wave'][260][200:600]
         },
         320: {
-            # "No Wave": data_dict['nlos_45_no_wave'][320][800:900],
-            "Little Wave": data_dict['nlos_45_little_wave'][320][600:1000],
+            "No Wave": data_dict['nlos_45_no_wave'][320][800:900],
+            "Small Wave": data_dict['nlos_45_little_wave'][320][600:1000],
             "Big Wave": data_dict['nlos_45_big_wave'][320][200:600]
         }
     }
-    plot_data_list(nlos_45_little_list[120], "nLOS 45 120GHz", os.path.join(pic_base, "nlos_45_120.png"))
-    plot_data_list(nlos_45_little_list[140], "nLOS 45 140GHz", os.path.join(pic_base, "nlos_45_140.png"))
-    plot_data_list(nlos_45_little_list[160], "nLOS 45 160GHz", os.path.join(pic_base, "nlos_45_160.png"))
-    plot_data_list(nlos_45_little_list[221], "nLOS 45 221GHz", os.path.join(pic_base, "nlos_45_221.png"))
-    plot_data_list(nlos_45_little_list[260], "nLOS 45 260GHz", os.path.join(pic_base, "nlos_45_260.png"))
-    plot_data_list(nlos_45_little_list[320], "nLOS 45 320GHz", os.path.join(pic_base, "nlos_45_320.png"))
+    plot_data_list(nlos_45_little_list[120], "N-Los 45 120GHz", os.path.join(pic_base, "nlos_45_120.png"))
+    plot_data_list(nlos_45_little_list[140], "N-Los 45 140GHz", os.path.join(pic_base, "nlos_45_140.png"))
+    plot_data_list(nlos_45_little_list[160], "N-Los 45 160GHz", os.path.join(pic_base, "nlos_45_160.png"))
+    plot_data_list(nlos_45_little_list[221], "N-Los 45 221GHz", os.path.join(pic_base, "nlos_45_221.png"))
+    plot_data_list(nlos_45_little_list[260], "N-Los 45 260GHz", os.path.join(pic_base, "nlos_45_260.png"))
+    plot_data_list(nlos_45_little_list[320], "N-Los 45 320GHz", os.path.join(pic_base, "nlos_45_320.png"))
