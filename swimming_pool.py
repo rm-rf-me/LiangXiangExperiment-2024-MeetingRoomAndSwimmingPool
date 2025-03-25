@@ -168,7 +168,7 @@ def plot_data_list(data_list, title, save_path=None):
     # 设置全局字体为 Times New Roman
     plt.rcParams.update({
         'font.family': 'Times New Roman',
-        'font.size': 12,  # 增大默认字体
+        'font.size': 12,
         'mathtext.fontset': 'stix'
     })
     
@@ -178,26 +178,43 @@ def plot_data_list(data_list, title, save_path=None):
     
     # 创建图形和轴
     fig, ax1 = plt.subplots()
-    # ax2 = ax1.twinx()
     
-    # 定义颜色方案，全部使用实线
-    colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
+    # 定义颜色方案
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c']  # No Wave (蓝), Small Wave (橙), Big Wave (绿)
     
     # 绘制数据
     for i, (k, data) in enumerate(data_list.items()):
-        if "Time" in data:
-            # ax2.plot(data["Time"][1:], data["Value"][1:]/2,
-            #         label=k,
-            #         color=colors[i % len(colors)],
-            #         linewidth=1.5)
-            pass
-        else:
-            # 将索引转换为时间（秒）
-            x_values = np.arange(len(data[4][1:])) / 7.0  # 转换为秒
-            ax1.plot(x_values, data[4][1:]/2,
+        if isinstance(data, dict) and "Time" in data:
+            # 处理带时间的数据
+            ax1.plot(data["Time"][1:], data["Value"][1:], 
                     label=k,
                     color=colors[i % len(colors)],
-                    linewidth=1.5)
+                    linewidth=1,
+                    alpha=0.3)  # 设置透明度
+            
+            # 计算并绘制平均值线
+            mean_value = np.mean(data["Value"][1:])
+            ax1.axhline(y=mean_value, 
+                       color=colors[i % len(colors)],
+                       linewidth=2,
+                       label=f'{k} Mean ({mean_value:.1f} dBm)')
+        else:
+            # 处理普通数据
+            x_values = np.arange(len(data[4][1:])) / 7.0  # 转换为秒
+            
+            # 绘制半透明的原始数据
+            ax1.plot(x_values, data[4][1:],
+                    label=k,
+                    color=colors[i % len(colors)],
+                    linewidth=1,
+                    alpha=0.3)  # 设置透明度
+            
+            # 计算并绘制平均值线
+            mean_value = np.mean(data[4][1:])
+            ax1.axhline(y=mean_value, 
+                       color=colors[i % len(colors)],
+                       linewidth=2,
+                       label=f'{k} Mean ({mean_value:.1f} dBm)')
     
     # 设置标题
     plt.title(title, pad=10, fontsize=14, fontweight='bold')
@@ -205,32 +222,20 @@ def plot_data_list(data_list, title, save_path=None):
     # 设置轴标签，增大字体
     ax1.set_xlabel('Time (s)', fontsize=12, labelpad=8)
     ax1.set_ylabel('Amplitude (dBm)', fontsize=12, labelpad=8)
-    # ax2.set_ylabel('Wave Height (mm)', fontsize=12, labelpad=8)
     
     # 设置刻度，增大字体
     ax1.tick_params(axis='both', direction='in', labelsize=11)
-    # ax2.tick_params(axis='both', direction='in', labelsize=11)
     
     # 添加网格线
     ax1.grid(True, linestyle='--', alpha=0.3)
-
-    # ax1.set_ylim(-25, -5)
     
-    # 优化图例位置，放在图内右上角
-    lines1, labels1 = ax1.get_legend_handles_labels()
-    # lines2, labels2 = ax2.get_legend_handles_labels()
-    # ax1.legend(lines1 + lines2, labels1 + labels2,
-    #           loc='upper right',  # 改为右上角
-    #           frameon=True,
-    #           fontsize=10,
-    #           ncol=1)
-    ax1.legend(lines1, labels1,
-               loc='upper right',  # 改为右上角
-               frameon=True,
-               fontsize=10,
-               ncol=1)
+    # 优化图例位置和样式
+    ax1.legend(loc='upper right',
+              frameon=True,
+              fontsize=10,
+              ncol=1)
     
-    # 调整布局，确保所有元素都在图内
+    # 调整布局
     plt.tight_layout()
     
     # 保存图片
