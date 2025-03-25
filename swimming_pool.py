@@ -186,35 +186,47 @@ def plot_data_list(data_list, title, save_path=None):
     for i, (k, data) in enumerate(data_list.items()):
         if isinstance(data, dict) and "Time" in data:
             # 处理带时间的数据
-            ax1.plot(data["Time"][1:], data["Value"][1:], 
+            values = data["Value"][1:]
+            x_values = np.arange(len(values))
+            
+            # 绘制半透明的原始数据
+            ax1.plot(x_values, values, 
                     label=k,
                     color=colors[i % len(colors)],
                     linewidth=1,
-                    alpha=0.3)  # 设置透明度
+                    alpha=0.3)
             
-            # 计算并绘制平均值线
-            mean_value = np.mean(data["Value"][1:])
-            ax1.axhline(y=mean_value, 
-                       color=colors[i % len(colors)],
-                       linewidth=2,
-                       label=f'{k} Mean ({mean_value:.1f} dBm)')
+            # 计算滑动平均
+            window_size = 50  # 调整窗口大小以改变平滑程度
+            smoothed = pd.Series(values).rolling(window=window_size, center=True).mean()
+            
+            # 绘制平滑曲线
+            ax1.plot(x_values, smoothed, 
+                    color=colors[i % len(colors)],
+                    linewidth=2,
+                    label=f'{k} Trend')
+            
         else:
             # 处理普通数据
             x_values = np.arange(len(data[4][1:])) / 7.0  # 转换为秒
+            values = data[4][1:]
             
             # 绘制半透明的原始数据
-            ax1.plot(x_values, data[4][1:],
+            ax1.plot(x_values, values,
                     label=k,
                     color=colors[i % len(colors)],
                     linewidth=1,
-                    alpha=0.3)  # 设置透明度
+                    alpha=0.3)
             
-            # 计算并绘制平均值线
-            mean_value = np.mean(data[4][1:])
-            ax1.axhline(y=mean_value, 
-                       color=colors[i % len(colors)],
-                       linewidth=2,
-                       label=f'{k} Mean ({mean_value:.1f} dBm)')
+            # 计算滑动平均
+            window_size = 50  # 调整窗口大小以改变平滑程度
+            smoothed = pd.Series(values).rolling(window=window_size, center=True).mean()
+            
+            # 绘制平滑曲线
+            ax1.plot(x_values, smoothed, 
+                    color=colors[i % len(colors)],
+                    linewidth=2,
+                    label=f'{k} Trend')
     
     # 设置标题
     plt.title(title, pad=10, fontsize=14, fontweight='bold')
