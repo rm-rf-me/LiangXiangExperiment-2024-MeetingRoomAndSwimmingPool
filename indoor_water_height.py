@@ -173,15 +173,22 @@ def plot_data_list(data_list, title, save_path=None):
                     linewidth=1,
                     alpha=0.3)
             
-            # 计算滑动平均
-            window_size = 100  # 调整窗口大小以改变平滑程度
-            smoothed = pd.Series(values).rolling(window=window_size, center=True).mean()
-            
-            # 绘制平滑曲线
-            ax1.plot(x_values, smoothed, 
-                    color=colors[i % len(colors)],
-                    linewidth=2,
-                    label=f'{k} Trend')
+            # 根据数据类型选择不同的处理方式
+            if "No Wave" in k:
+                # 无浪状态使用均值线
+                mean_value = np.mean(values)
+                ax1.axhline(y=mean_value, 
+                          color=colors[i % len(colors)],
+                          linewidth=2,
+                          label=f'{k} Mean ({mean_value:.1f} dBm)')
+            else:
+                # 小浪和大浪状态使用滑动平均
+                window_size = 100  # 调整窗口大小以改变平滑程度
+                smoothed = pd.Series(values).rolling(window=window_size, center=True).mean()
+                ax1.plot(x_values, smoothed, 
+                        color=colors[i % len(colors)],
+                        linewidth=2,
+                        label=f'{k} Trend')
     
     # 设置标题
     plt.title(title, pad=10, fontsize=14, fontweight='bold')
@@ -390,6 +397,9 @@ if __name__ == '__main__':
     plot_data_list(nlos_30_little_list[221], "N-Los 30 221GHz", os.path.join(pic_base, "nlos_30_221.png"))
     plot_data_list(nlos_30_little_list[260], "N-Los 30 260GHz", os.path.join(pic_base, "nlos_30_260.png"))
     plot_data_list(nlos_30_little_list[320], "N-Los 30 320GHz", os.path.join(pic_base, "nlos_30_320.png"))
+    plot_data_list(nlos_30_little_list[160], "(a) 160GHz-30°", os.path.join(pic_base, "nlos_30_160.png"))
+    plot_data_list(nlos_30_little_list[221], "(b) 221GHz-30°", os.path.join(pic_base, "nlos_30_221.png"))
+    plot_data_list(nlos_30_little_list[320], "(c) 320GHz-30°", os.path.join(pic_base, "nlos_30_320.png"))
 
     nlos_45_little_list = {
         120: {
@@ -429,3 +439,6 @@ if __name__ == '__main__':
     plot_data_list(nlos_45_little_list[221], "N-Los 45 221GHz", os.path.join(pic_base, "nlos_45_221.png"))
     plot_data_list(nlos_45_little_list[260], "N-Los 45 260GHz", os.path.join(pic_base, "nlos_45_260.png"))
     plot_data_list(nlos_45_little_list[320], "N-Los 45 320GHz", os.path.join(pic_base, "nlos_45_320.png"))
+    plot_data_list(nlos_45_little_list[160], "(d) 160GHz-45°", os.path.join(pic_base, "nlos_45_160.png"))
+    plot_data_list(nlos_45_little_list[221], "(e) 221GHz-45°", os.path.join(pic_base, "nlos_45_221.png"))
+    plot_data_list(nlos_45_little_list[320], "(f) 320GHz-45°", os.path.join(pic_base, "nlos_45_320.png"))

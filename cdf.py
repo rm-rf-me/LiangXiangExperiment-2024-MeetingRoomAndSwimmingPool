@@ -245,7 +245,7 @@ def cdf_for_swimming_poll():
         }
     }
     cdf_rice([cut_data(x) for x in nlos_high_list[220].values()],
-             save_path=os.path.join(save_path_base, '_nlos_high_no_wave.png'), title='N-Los 220GHz', noice_level=39)
+             save_path=os.path.join(save_path_base, '_nlos_high_no_wave.png'), title='(b) N-Los 220GHz', noice_level=39)
     cdf_rice([cut_data(x) for x in nlos_high_list[225].values()],
              save_path=os.path.join(save_path_base, '_nlos_high_little_wave.png'), title='N-Los 225GHz', noice_level=39)
     cdf_rice([cut_data(x) for x in nlos_high_list[229].values()],
@@ -329,7 +329,7 @@ def cdf_for_swimming_poll():
     cdf_rice([cut_data(x) for x in nlos_low_list[120].values()],
              save_path=os.path.join(save_path_base, '_nlos_low_little_wave.png'), title='N-Los 120GHz', noice_level=38)
     cdf_rice([cut_data(x) for x in nlos_low_list[160].values()],
-             save_path=os.path.join(save_path_base, '_nlos_low_big_wave.png'), title='N-Los 160GHz', noice_level=38)
+             save_path=os.path.join(save_path_base, '_nlos_low_big_wave.png'), title='(a) N-Los 160GHz', noice_level=38)
 
 
 if __name__ == '__main__':

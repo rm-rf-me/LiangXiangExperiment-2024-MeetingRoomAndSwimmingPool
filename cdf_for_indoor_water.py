@@ -219,10 +219,24 @@ def cdf_for_indoor_water_with_cut_data():
             
             # 只在有足够数据时绘图
             if len(data_list) == 3:
+                if degree == '30' and freq == 160:
+                    prefix = '(a) '
+                elif degree == '30' and freq == 221:
+                    prefix = '(b) '
+                elif degree == '30' and freq == 320:
+                    prefix = '(c) '
+                elif degree == '45' and freq == 160:
+                    prefix = '(d) '
+                elif degree == '45' and freq == 221:
+                    prefix = '(e) '
+                elif degree == '45' and freq == 320:
+                    prefix = '(f) '
+                else:
+                    prefix = ''
                 cdf_rice(
                     [cut_data(x) for x in data_list],
                     save_path=os.path.join(save_path_base, f'_{degree}度_{freq}GHz.png'),
-                    title=f'{degree}Degree, {freq}GHz',
+                    title=f'{prefix}{freq}GHz-{degree}°',
                     noice_level=39 if degree == '30' else 41
                 )
             else:

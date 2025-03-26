@@ -186,7 +186,7 @@ def plot_data_list(data_list, title, save_path=None):
     for i, (k, data) in enumerate(data_list.items()):
         if isinstance(data, dict) and "Time" in data:
             # 处理带时间的数据
-            values = data["Value"][1:]
+            values = data["Value"][1:]/2
             x_values = np.arange(len(values))
             
             # 绘制半透明的原始数据
@@ -209,7 +209,7 @@ def plot_data_list(data_list, title, save_path=None):
         else:
             # 处理普通数据
             x_values = np.arange(len(data[4][1:])) / 7.0  # 转换为秒
-            values = data[4][1:]
+            values = data[4][1:]/2
             
             # 绘制半透明的原始数据
             ax1.plot(x_values, values,
@@ -219,7 +219,7 @@ def plot_data_list(data_list, title, save_path=None):
                     alpha=0.3)
             
             # 计算滑动平均
-            window_size = 50  # 调整窗口大小以改变平滑程度
+            window_size = 100  # 调整窗口大小以改变平滑程度
             smoothed = pd.Series(values).rolling(window=window_size, center=True).mean()
             
             # 绘制平滑曲线
@@ -379,7 +379,7 @@ if __name__ == '__main__':
             "Big Wave": data_dict['nlos_high_big_wave'][229][150:550]
         }
     }
-    plot_data_list(nlos_high_list[220], "N-Los 220GHz", os.path.join(pic_base, "nlos_high_220.png"))
+    plot_data_list(nlos_high_list[220], "(b) N-Los 220GHz", os.path.join(pic_base, "nlos_high_220.png"))
     plot_data_list(nlos_high_list[225], "N-Los 225GHz", os.path.join(pic_base, "nlos_high_225.png"))
     plot_data_list(nlos_high_list[229], "N-Los 229GHz", os.path.join(pic_base, "nlos_high_229.png"))
     #
@@ -459,6 +459,6 @@ if __name__ == '__main__':
     }
     plot_data_list(nlos_low_list[140], "N-Los 140GHz", os.path.join(pic_base, "nlos_low_140.png"))
     plot_data_list(nlos_low_list[120], "N-Los 120GHz", os.path.join(pic_base, "nlos_low_120.png"))
-    plot_data_list(nlos_low_list[160], "N-Los 160GHz", os.path.join(pic_base, "nlos_low_160.png"))
+    plot_data_list(nlos_low_list[160], "(a) N-Los 160GHz", os.path.join(pic_base, "nlos_low_160.png"))
 
 
