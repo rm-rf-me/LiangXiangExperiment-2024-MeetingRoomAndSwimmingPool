@@ -94,13 +94,13 @@ def cdf_rice(data_list, save_path=None, title=None, noice_level=None):
     bin_centers13 = (bins13[:-1] + bins13[1:]) / 2
 
     # 绘制散点图，使用更小的点和统一的实线
-    plt.scatter(bin_centers11, cdf11, color='#2ca02c', s=0.5, label='No Wave (Measured)')
+    plt.scatter(bin_centers11, cdf11, color='#1f77b4', s=0.5, label='No Wave (Measured)')
     plt.scatter(bin_centers12, cdf12, color='#ff7f0e', s=0.5, label='Small Wave (Measured)')
-    plt.scatter(bin_centers13, cdf13, color='#1f77b4', s=0.5, label='Big Wave (Measured)')
+    plt.scatter(bin_centers13, cdf13, color='#2ca02c', s=0.5, label='Big Wave (Measured)')
 
-    plt.plot(x_values1, cdf_weibull1, color='#2ca02c', linewidth=1, label='No Wave (Weibull)')
+    plt.plot(x_values1, cdf_weibull1, color='#1f77b4', linewidth=1, label='No Wave (Weibull)')
     plt.plot(x_values2, cdf_weibull2, color='#ff7f0e', linewidth=1, label='Small Wave (Weibull)')
-    plt.plot(x_values3, cdf_weibull3, color='#1f77b4', linewidth=1, label='Big Wave (Weibull)')
+    plt.plot(x_values3, cdf_weibull3, color='#2ca02c', linewidth=1, label='Big Wave (Weibull)')
 
     # 绘制拟合曲线，使用实线
     # plt.plot(x_values1, cdf_rician1, color='#1f77b4', linewidth=1.5, label='No Wave Rician')
