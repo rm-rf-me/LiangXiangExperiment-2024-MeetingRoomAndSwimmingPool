@@ -49,7 +49,7 @@ def cdf_rice(data_list, save_path=None, title=None, noice_level=None):
     })
     
     # 设置图片尺寸为正方形
-    plt.rcParams['figure.figsize'] = [4, 4]  # 修改为正方形尺寸
+    plt.rcParams['figure.figsize'] = [5, 3]  # 修改为正方形尺寸
     plt.rcParams['figure.dpi'] = 300
     
     data1, data2, data3 = data_list
@@ -135,23 +135,29 @@ def cdf_rice(data_list, save_path=None, title=None, noice_level=None):
     plt.xlabel('SNR', fontsize=12, labelpad=8)
     plt.ylabel('CDF', fontsize=12, labelpad=8)
     
-    if title is not None:
-        plt.title(title, pad=10, fontsize=14, fontweight='bold')
+    # if title is not None:
+    #     plt.title(title, pad=10, fontsize=14, fontweight='bold')
     
     # 设置刻度，增大字体
     plt.tick_params(axis='both', direction='in', labelsize=11)
     
-    # 添加网格线
-    plt.grid(True, linestyle='--', alpha=0.3)
-    
-    # 优化图例位置和样式，改为右下角
-    plt.legend(loc='lower right',  # 改为 lower right
-              frameon=True,
-              fontsize=10,
-              ncol=1)
-    
-    # 调整布局，保持正方形比例
-    plt.tight_layout()
+    # 去除四周边框
+    ax = plt.gca()
+    for spine in ['top', 'right']:
+        ax.spines[spine].set_visible(False)
+
+    # 图例放到图片外部右侧
+    handles, labels = ax.get_legend_handles_labels()
+    plt.legend(
+        handles, labels,
+        loc='center left',
+        bbox_to_anchor=(1.01, 0.5),
+        frameon=False,
+        fontsize=10,
+        ncol=1
+    )
+
+    plt.tight_layout()  # 右侧留出空间给图例
     
     # 保存图片时保持正方形比例
     if save_path:

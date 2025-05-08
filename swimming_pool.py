@@ -229,26 +229,45 @@ def plot_data_list(data_list, title, save_path=None):
                     label=f'{k} Trend')
     
     # 设置标题
-    plt.title(title, pad=10, fontsize=14, fontweight='bold')
+    # plt.title(title, pad=10, fontsize=14, fontweight='bold')
+    # ax1.text(
+    #     0, 1.02, title,
+    #     transform=ax1.transAxes,
+    #     fontsize=14,
+    #     fontweight='bold',
+    #     va='bottom',
+    #     ha='left'
+    # )
     
     # 设置轴标签，增大字体
     ax1.set_xlabel('Time (s)', fontsize=12, labelpad=8)
     ax1.set_ylabel('Amplitude (dBm)', fontsize=12, labelpad=8)
+
+    # ax1.set_xlim(0, 60)  # 设置 x 轴范围
+    # ax1.set_ylim(-20, -12)
     
     # 设置刻度，增大字体
     ax1.tick_params(axis='both', direction='in', labelsize=11)
     
-    # 添加网格线
-    ax1.grid(True, linestyle='--', alpha=0.3)
-    
-    # 优化图例位置和样式
-    ax1.legend(loc='upper right',
-              frameon=True,
-              fontsize=10,
-              ncol=1)
-    
-    # 调整布局
-    plt.tight_layout()
+    # 去除背景网格
+    # ax1.grid(True, linestyle='--', alpha=0.3)  # 删除或注释掉这一行
+
+    # 去除四周边框
+    for spine in ['top', 'right']:
+        ax1.spines[spine].set_visible(False)
+
+    # 图例放到图片外部右侧
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    ax1.legend(
+        lines1, labels1,
+        loc='center left',
+        bbox_to_anchor=(1.01, 0.5),
+        frameon=False,
+        fontsize=10,
+        ncol=1
+    )
+
+    plt.tight_layout()  # 右侧留出空间给图例
     
     # 保存图片
     if save_path:
@@ -379,7 +398,7 @@ if __name__ == '__main__':
             "Big Wave": data_dict['nlos_high_big_wave'][229][150:550]
         }
     }
-    plot_data_list(nlos_high_list[220], "(b) N-Los 220GHz", os.path.join(pic_base, "nlos_high_220.png"))
+    plot_data_list(nlos_high_list[220], "(b)", os.path.join(pic_base, "nlos_high_220.png"))
     plot_data_list(nlos_high_list[225], "N-Los 225GHz", os.path.join(pic_base, "nlos_high_225.png"))
     plot_data_list(nlos_high_list[229], "N-Los 229GHz", os.path.join(pic_base, "nlos_high_229.png"))
     #
@@ -459,6 +478,6 @@ if __name__ == '__main__':
     }
     plot_data_list(nlos_low_list[140], "N-Los 140GHz", os.path.join(pic_base, "nlos_low_140.png"))
     plot_data_list(nlos_low_list[120], "N-Los 120GHz", os.path.join(pic_base, "nlos_low_120.png"))
-    plot_data_list(nlos_low_list[160], "(a) N-Los 160GHz", os.path.join(pic_base, "nlos_low_160.png"))
+    plot_data_list(nlos_low_list[160], "(a)", os.path.join(pic_base, "nlos_low_160.png"))
 
 

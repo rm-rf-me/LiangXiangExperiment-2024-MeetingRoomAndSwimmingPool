@@ -49,6 +49,7 @@ def cdf_rice(data_list, save_path=None, title=None, noice_level=None):
     k_factor1 = (shape_param1 ** 2) / 2
     cdf_rician1 = rice.cdf(x_values1, *rice_params1)
     cdf_rayleigh1 = rayleigh.cdf(x_values1, *rayleigh.fit(power11))
+    print(f"title: {title}, weibull_param1: {weibull_min.fit(power11)}")
     cdf_weibull1 = weibull_min.cdf(x_values1, *weibull_min.fit(power11))
 
     x_values2 = np.linspace(min(power12), max(power12), 200)
@@ -57,6 +58,7 @@ def cdf_rice(data_list, save_path=None, title=None, noice_level=None):
     k_factor2 = (shape_param2 ** 2) / 2
     cdf_rician2 = rice.cdf(x_values2, *rice_params2)
     cdf_rayleigh2 = rayleigh.cdf(x_values2, *rayleigh.fit(power12))
+    print(f"title: {title}, weibull_param2: {weibull_min.fit(power12)}")
     cdf_weibull2 = weibull_min.cdf(x_values2, *weibull_min.fit(power12))
 
     x_values3 = np.linspace(min(power13), max(power13), 200)
@@ -65,6 +67,7 @@ def cdf_rice(data_list, save_path=None, title=None, noice_level=None):
     k_factor3 = (shape_param3 ** 2) / 2
     cdf_rician3 = rice.cdf(x_values3, *rice_params3)
     cdf_rayleigh3 = rayleigh.cdf(x_values3, *rayleigh.fit(power13))
+    print(f"title: {title}, weibull_param3: {weibull_min.fit(power13)}")
     cdf_weibull3 = weibull_min.cdf(x_values3, *weibull_min.fit(power13))
 
     # Plotting the empirical and fitted CDFs
@@ -124,9 +127,9 @@ def cdf_rice(data_list, save_path=None, title=None, noice_level=None):
     plt.xlabel('SNR', fontsize=12, labelpad=8)
     plt.ylabel('CDF', fontsize=12, labelpad=8)
     
-    if title is not None:
-        plt.title(title,
-                  pad=10, fontsize=14, fontweight='bold')
+    # if title is not None:
+    #     plt.title(title,
+    #               pad=10, fontsize=14, fontweight='bold')
         # plt.title(title + f"\nK1={k_factor1:.2f}, K2={k_factor2:.2f}, K3={k_factor3:.2f}", 
         #          pad=10, fontsize=14, fontweight='bold')
     
@@ -138,14 +141,23 @@ def cdf_rice(data_list, save_path=None, title=None, noice_level=None):
 
     # plt.xlim(0, 16)
     
-    # 优化图例位置和样式
-    plt.legend(loc='lower right',
-              frameon=True,
-              fontsize=10,
-              ncol=1)
-    
-    # 调整布局
-    plt.tight_layout()
+    # 去除四周边框
+    ax = plt.gca()
+    for spine in ['top', 'right']:
+        ax.spines[spine].set_visible(False)
+
+    # 图例放到图片外部右侧
+    handles, labels = ax.get_legend_handles_labels()
+    plt.legend(
+        handles, labels,
+        loc='center left',
+        bbox_to_anchor=(1.01, 0.5),
+        frameon=False,
+        fontsize=10,
+        ncol=1
+    )
+
+    plt.tight_layout()  # 右侧留出空间给图例
     
     # 保存图片
     if save_path:

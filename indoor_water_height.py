@@ -200,19 +200,22 @@ def plot_data_list(data_list, title, save_path=None):
     # 设置刻度，增大字体
     ax1.tick_params(axis='both', direction='in', labelsize=11)
     
-    # 添加网格线
-    ax1.grid(True, linestyle='--', alpha=0.3)
-    
-    # 优化图例位置和样式
+    # 去除四周边框
+    for spine in ['top', 'right', 'left', 'bottom']:
+        ax1.spines[spine].set_visible(False)
+
+    # 图例放到图片外部右侧
     lines1, labels1 = ax1.get_legend_handles_labels()
-    ax1.legend(lines1, labels1,
-              loc='upper right',
-              frameon=True,
-              fontsize=10,
-              ncol=1)
-    
-    # 调整布局
-    plt.tight_layout()
+    ax1.legend(
+        lines1, labels1,
+        loc='center left',
+        bbox_to_anchor=(1.01, 0.5),
+        frameon=False,
+        fontsize=10,
+        ncol=1
+    )
+
+    plt.tight_layout(rect=[0, 0, 0.85, 1])  # 右侧留出空间给图例
     
     # 保存图片
     if save_path:
