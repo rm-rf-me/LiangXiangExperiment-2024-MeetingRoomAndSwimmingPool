@@ -6,6 +6,7 @@ from sklearn.cluster import KMeans
 from draw_meeting_room_2d import calculate_beam_path, line_segment_ray_intersection, draw_meeting_room_with_angles
 import matplotlib.pyplot as plt
 from matplotlib.patches import Wedge
+from tqdm import tqdm
 
 # 常量定义
 FREQUENCY = 140e9  # 140GHz
@@ -204,27 +205,80 @@ def plot_signal_path(path, tx_angle, rx_angle, value=None, save_path=None, is_ma
     fig, ax = plt.subplots()
     
     # 绘制墙体
-    for wall in walls:
+    for i, wall in enumerate(walls):
         wall_start, wall_end = wall
         ax.plot([wall_start[0], wall_end[0]], [wall_start[1], wall_end[1]], 'k-', linewidth=2)
+        
+        # 计算墙面中点位置
+        mid_x = (wall_start[0] + wall_end[0]) / 2
+        mid_y = (wall_start[1] + wall_end[1]) / 2
+        
+        # 计算墙面方向向量
+        dx = wall_end[0] - wall_start[0]
+        dy = wall_end[1] - wall_start[1]
+        wall_angle = np.arctan2(dy, dx)
+        
+        # 调整文本角度，使其与墙面平行
+        text_angle = np.rad2deg(wall_angle)
+        if text_angle > 90 or text_angle < -90:
+            text_angle += 180
+        
+        # 添加墙面编号标注，使用红色加粗字体
+        ax.text(mid_x, mid_y, f'W{i+1}', 
+                rotation=text_angle,
+                ha='center', va='center',
+                bbox=dict(facecolor='white', edgecolor='none', alpha=0.7),
+                color='red', fontweight='bold', fontsize=10)
     
     # 绘制发射机和接收机
     ax.plot(tx_position[0], tx_position[1], 'ro', label='TX')
     ax.plot(rx_position[0], rx_position[1], 'bo', label='RX')
     
-    # 绘制TX和RX的方向
-    tx_dir = np.array([np.cos(np.deg2rad(tx_angle)), np.sin(np.deg2rad(tx_angle))])
-    rx_dir = np.array([np.cos(np.deg2rad(rx_angle)), np.sin(np.deg2rad(rx_angle))])
+    # 绘制TX的主瓣和旁瓣
+    tx_main_angle = tx_angle
+    tx_left_angle = tx_angle - 13
+    tx_right_angle = tx_angle + 13
     
-    # 绘制TX方向
+    # TX主瓣
+    tx_main_dir = np.array([np.cos(np.deg2rad(tx_main_angle)), np.sin(np.deg2rad(tx_main_angle))])
     ax.arrow(tx_position[0], tx_position[1], 
-             tx_dir[0]*0.5, tx_dir[1]*0.5,
-             head_width=0.1, head_length=0.2, fc='r', ec='r')
+             tx_main_dir[0]*0.5, tx_main_dir[1]*0.5,
+             head_width=0.1, head_length=0.2, fc='r', ec='r', label='TX Main Lobe')
     
-    # 绘制RX方向
+    # TX左旁瓣
+    tx_left_dir = np.array([np.cos(np.deg2rad(tx_left_angle)), np.sin(np.deg2rad(tx_left_angle))])
+    ax.arrow(tx_position[0], tx_position[1], 
+             tx_left_dir[0]*0.5, tx_left_dir[1]*0.5,
+             head_width=0.1, head_length=0.2, fc='r', ec='r', alpha=0.3, label='TX Side Lobe')
+    
+    # TX右旁瓣
+    tx_right_dir = np.array([np.cos(np.deg2rad(tx_right_angle)), np.sin(np.deg2rad(tx_right_angle))])
+    ax.arrow(tx_position[0], tx_position[1], 
+             tx_right_dir[0]*0.5, tx_right_dir[1]*0.5,
+             head_width=0.1, head_length=0.2, fc='r', ec='r', alpha=0.3)
+    
+    # 绘制RX的主瓣和旁瓣
+    rx_main_angle = rx_angle
+    rx_left_angle = rx_angle - 13
+    rx_right_angle = rx_angle + 13
+    
+    # RX主瓣
+    rx_main_dir = np.array([np.cos(np.deg2rad(rx_main_angle)), np.sin(np.deg2rad(rx_main_angle))])
     ax.arrow(rx_position[0], rx_position[1],
-             rx_dir[0]*0.5, rx_dir[1]*0.5,
-             head_width=0.1, head_length=0.2, fc='b', ec='b')
+             rx_main_dir[0]*0.5, rx_main_dir[1]*0.5,
+             head_width=0.1, head_length=0.2, fc='b', ec='b', label='RX Main Lobe')
+    
+    # RX左旁瓣
+    rx_left_dir = np.array([np.cos(np.deg2rad(rx_left_angle)), np.sin(np.deg2rad(rx_left_angle))])
+    ax.arrow(rx_position[0], rx_position[1],
+             rx_left_dir[0]*0.5, rx_left_dir[1]*0.5,
+             head_width=0.1, head_length=0.2, fc='b', ec='b', alpha=0.3, label='RX Side Lobe')
+    
+    # RX右旁瓣
+    rx_right_dir = np.array([np.cos(np.deg2rad(rx_right_angle)), np.sin(np.deg2rad(rx_right_angle))])
+    ax.arrow(rx_position[0], rx_position[1],
+             rx_right_dir[0]*0.5, rx_right_dir[1]*0.5,
+             head_width=0.1, head_length=0.2, fc='b', ec='b', alpha=0.3)
     
     # 绘制TX和RX的坐标和角度标注
     ax.annotate(f'TX: ({tx_position[0]:.2f}, {tx_position[1]:.2f})\n{tx_angle:.1f}°',
@@ -325,7 +379,8 @@ def get_all_possible_paths(tx_angle, rx_angle, max_reflections=3, draw_path=Fals
             res, distance, angle, intersection_point = check_point_in_path(
                 rx_position, rx_dir, current_position, direction, max_distance, max_angle)
             if res:
-                path_points.append(intersection_point)
+                # 找到有效路径，直接连接到RX
+                path_points.append(rx_position)
                 found = True
                 break
             # 没到达RX则找最近的墙反射
@@ -605,7 +660,8 @@ def main(draw_debug=False):
         os.makedirs(save_path_base, exist_ok=True)
     
     # 加载数据
-    file_path = "meeting_room_data_2/2024-10-08-17-02-44_有窗帘 140ghz 发射和接收都扫270度.xlsx"
+    # file_path = "meeting_room_data_2/2024-10-08-17-02-44_有窗帘 140ghz 发射和接收都扫270度.xlsx"
+    file_path = "meeting_room_data_2/2024-10-07-19-06-37_all.xlsx"
     raw_data = load_and_preprocess_data(file_path)
     
     # 统计原始数据
@@ -629,15 +685,11 @@ def main(draw_debug=False):
     valid_paths_count = 0
     total_paths_checked = 0
     
-    for idx, row in data.iterrows():
+    print("\n开始计算传播路径...")
+    for idx, row in tqdm(data.iterrows(), total=len(data), desc="处理测量点"):
         tx_angle = row['angle200']
         rx_angle = row['angle300']
         value = row['value']
-        
-        # 打印一些调试信息
-        if tx_angle < 92 and tx_angle > 88 and rx_angle < -87 and rx_angle > -88:  # 只打印前5个点的详细信息
-            print(f"\n检查点 {idx}:")
-            print(f"TX角度: {tx_angle:.1f}°, RX角度: {rx_angle:.1f}°, 信号强度: {value:.1f} dB")
         
         save_path = os.path.join(save_path_base, f"path_{idx}.png") if draw_debug else None
         possible_paths = get_all_possible_paths(
@@ -652,15 +704,6 @@ def main(draw_debug=False):
         if possible_paths:
             valid_paths_count += 1
             paths.extend(possible_paths)
-            
-            if idx < 5:  # 只打印前5个点的路径信息
-                print(f"找到 {len(possible_paths)} 条有效路径")
-                for i, path in enumerate(possible_paths):
-                    path_points, wall_indices, incident_angles = path
-                    print(f"路径 {i+1}:")
-                    print(f"  反射点数量: {len(wall_indices)}")
-                    print(f"  墙面编号: {wall_indices}")
-                    print(f"  入射角: {[f'{angle:.1f}°' for angle in incident_angles]}")
     
     print(f"\n路径统计：")
     print(f"有效测量点数：{valid_paths_count}")
@@ -675,16 +718,16 @@ def main(draw_debug=False):
         print("3. 路径计算有误")
         return
     
-    # 构建方程组
+    print("\n开始构建方程组...")
     equations, constants = build_equation_system(data, paths)
     
-    # 估计墙面参数
+    print("\n开始参数拟合...")
     estimated_epsilons = estimate_wall_parameters(equations, constants)
     
-    # 对相似表面进行聚类
+    print("\n开始表面聚类...")
     labels = cluster_similar_surfaces(estimated_epsilons)
     
-    # 评估拟合误差
+    print("\n评估拟合误差...")
     mse = evaluate_fitting_error(estimated_epsilons, data, paths)
     
     # 输出结果
